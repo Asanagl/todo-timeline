@@ -1,0 +1,76 @@
+# EditorConfig Configuration
+# https://editorconfig.org/
+
+# Top-level EditorConfig file
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# C++ source files
+[*.{cpp,h,hpp}]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# QML files
+[*.qml]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# CMake files
+[CMakeLists.txt]
+indent_style = space
+indent_size = 4
+
+[*.cmake]
+indent_style = space
+indent_size = 4
+
+# Build scripts
+[*.bat]
+end_of_line = crlf
+
+[*.sh]
+end_of_line = lf
+
+# YAML files
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# JSON files
+[*.json]
+indent_style = space
+indent_size = 2
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 200
+
+# XML files
+[*.xml]
+indent_style = space
+indent_size = 4
+
+# Git configuration
+[.gitignore]
+indent_style = space
+indent_size = 4
+
+# EditorConfig files
+[.editorconfig]
+indent_style = space
+indent_size = 4
+
+# License files
+[LICENSE]
+insert_final_newline = true

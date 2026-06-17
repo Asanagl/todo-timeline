@@ -1,0 +1,220 @@
+# Clang-Tidy Configuration
+# https://clang.llvm.org/extra/clang-tidy/
+
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  google-*,
+  hicpp-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -cert-err58-cpp,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-special-member-functions,
+  -google-build-using-namespace,
+  -google-readability-todo,
+  -hicpp-avoid-c-arrays,
+  -hicpp-special-member-functions,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-avoid-c-arrays,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -readability-identifier-length
+
+WarningsAsErrors: >
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  performance-*,
+  -bugprone-easily-swappable-parameters,
+  -cert-err58-cpp
+
+HeaderFilterRegex: 'src/.*\.(h|hpp)$'
+
+CheckOptions:
+  - key: bugprone-argument-comment.StrictMode
+    value: 0
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: assert
+  - key: bugprone-dangling-handle.HandleClasses
+    value: string_view
+  - key: bugprone-forward-declaration-namespace.SerializedNamepaces
+    value: 0
+  - key: bugprone-forward-declaration-namespace.StrictMode
+    value: 0
+  - key: bugprone-incorrect-roundings.PrimaryCheck
+    value: 0
+  - key: bugprone-narrowing-conversions.IgnoreCompoundAssignments
+    value: 0
+  - key: bugprone-narrowing-conversions.IgnoreIntToFloat
+    value: 0
+  - key: bugprone-narrowing-conversions.SemiFixedPointMultiplier
+    value: 0
+  - key: bugprone-sizeof-expression.WarnOnSizeOfConstant
+    value: 0
+  - key: bugprone-sizeof-expression.WarnOnSizeOfThis
+    value: 0
+  - key: bugprone-sizeof-expression.WarnOnSizeOfPointerToAggregate
+    value: 0
+  - key: bugprone-string-integer-assignment.StrictMode
+    value: 0
+  - key: bugprone-string-constructor.MaxSize
+    value: 0
+  - key: bugprone-suspicious-enum-combination.StrictMode
+    value: 0
+  - key: bugprone-suspicious-enum-combination.PermissiveCaution
+    value: 0
+  - key: bugprone-suspicious-include.AlsoCheckIncludes
+    value: 0
+  - key: bugprone-suspicious-missing-comma.MaxConcatenatedTokens
+    value: 0
+  - key: bugprone-suspicious-missing-comma.StringLiteralThreshold
+    value: 0
+  - key: bugprone-suspicious-semicolon.IgnoreMacros
+    value: 0
+  - key: bugprone-suspicious-string-compare-include-list
+    value: 0
+  - key: bugprone-suspicious-string-compare-include-list-strict
+    value: 0
+  - key: bugprone-unhandled-self-assignment.WarnOnMissingAssignmentOperator
+    value: 0
+  - key: cert-dcl50-cpp.AllowPackExpansion
+    value: 0
+  - key: cert-env33-c.AllowVersionedHeaders
+    value: 0
+  - key: cert-err58-cpp.AllowStaticInit
+    value: 0
+  - key: cert-err58-cpp.AllowDefaultInit
+    value: 0
+  - key: cert-err60-cpp.AllowDynamicExceptions
+    value: 0
+  - key: cert-str34-c.WideCharArray
+    value: 0
+  - key: clang-analyzer-deadcode.DeadStores
+    value: 0
+  - key: clang-analyzer-optin.cplusplus.UninitializedObject
+    value: 0
+  - key: clang-analyzer-optin.cplusplus.UninitializedObject
+    value: 0
+  - key: clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+    value: 0
+  - key: clang-analyzer-security.insecureAPI.strcpy
+    value: 0
+  - key: clang-analyzer-security.insecureAPI.strcpy
+    value: 0
+  - key: clang-analyzer-unix.Malloc
+    value: 0
+  - key: clang-analyzer-unix.Malloc
+    value: 0
+  - key: clang-analyzer-unix.MismatchedDeallocator
+    value: 0
+  - key: clang-analyzer-unix.MismatchedDeallocator
+    value: 0
+  - key: clang-analyzer-valist.CopyToSelf
+    value: 0
+  - key: clang-analyzer-valist.Unterminated
+    value: 0
+  - key: clang-analyzer-valist.Uninitialized
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredLiteralValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreTypeSuffixes
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingPointValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreBitFieldsWidths
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreEnumConstantValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreUserDefinedLiterals
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredLiteralValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreTypeSuffixes
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingPointValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreBitFieldsWidths
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreEnumConstantValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreUserDefinedLiterals
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredLiteralValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreTypeSuffixes
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingPointValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreBitFieldsWidths
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreEnumConstantValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreUserDefinedLiterals
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredLiteralValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreTypeSuffixes
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingPointValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreBitFieldsWidths
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreEnumConstantValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreUserDefinedLiterals
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredLiteralValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoredMacros
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreTypeSuffixes
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingPointValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreBitFieldsWidths
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreEnumConstantValues
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreUserDefinedLiterals
+    value: 0
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnoreMacros
+    value: 0

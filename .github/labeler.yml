@@ -1,0 +1,106 @@
+# Configuration for actions/labeler
+# https://github.com/actions/labeler
+
+# Documentation
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.md'
+      - 'docs/**'
+      - '.github/**/*.md'
+
+# C++ source files
+cpp:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/**'
+      - '*.cpp'
+      - '*.h'
+      - '*.hpp'
+
+# QML files
+qml:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'qml/**'
+      - '*.qml'
+
+# Build system
+build:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'CMakeLists.txt'
+      - '*.cmake'
+      - 'build.*'
+      - 'run.*'
+      - 'start.*'
+      - 'test.*'
+
+# Android
+android:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'android/**'
+
+# GitHub configuration
+github:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/**'
+
+# Dependencies
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'CMakeLists.txt'
+      - '*.cmake'
+
+# UI changes
+ui:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'qml/**'
+      - '*.qml'
+      - '*.svg'
+      - '*.png'
+      - '*.jpg'
+
+# Backend changes
+backend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/**'
+      - '*.cpp'
+      - '*.h'
+
+# Build scripts
+scripts:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.bat'
+      - '*.sh'
+
+# Configuration files
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.json'
+      - '*.yml'
+      - '*.yaml'
+      - '.gitignore'
+
+# Resources
+resources:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'resources.qrc'
+      - 'assets/**'
+      - 'icons/**'
+
+# Tests
+tests:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'test/**'
+      - '*_test.cpp'
+      - 'test_*.cpp'

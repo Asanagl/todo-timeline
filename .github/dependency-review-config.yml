@@ -1,0 +1,39 @@
+# Dependency Review Configuration
+# https://github.com/actions/dependency-review-action
+
+# Fail on vulnerabilities with this severity or higher
+# Options: low, moderate, high, critical
+fail-on-severity: high
+
+# Check for vulnerabilities
+vulnerability-check: true
+
+# Check for license issues
+license-check: true
+
+# Denied licenses
+deny-licenses:
+  - GPL-3.0
+  - AGPL-3.0
+  - LGPL-3.0
+
+# Allowed licenses (if specified, only these are allowed)
+# allow-licenses:
+#   - MIT
+#   - Apache-2.0
+#   - BSD-2-Clause
+#   - BSD-3-Clause
+
+# Ignore specific vulnerabilities
+# ignore-vulnerabilities:
+#   - GHSA-abcd-1234-5678
+#   - CVE-2023-12345
+
+# Comment on PR
+comment-summary-in-pr: always
+
+# Use vulnerability database
+vulnerability-check: true
+
+# Configuration file path
+config-file: .github/dependency-review-config.yml

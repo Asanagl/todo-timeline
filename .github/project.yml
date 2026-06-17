@@ -1,0 +1,64 @@
+# GitHub Project Board Configuration
+# This file defines the columns and automation for the project board
+
+# Project name
+name: Todo Timeline Development
+
+# Project description
+description: Development tracking for Todo Timeline application
+
+# Columns configuration
+columns:
+  # Backlog - Items not yet started
+  - name: Backlog
+    color: gray
+    description: Items not yet started
+    
+  # To Do - Items planned for current sprint
+  - name: To Do
+    color: blue
+    description: Items planned for current sprint
+    
+  # In Progress - Items currently being worked on
+  - name: In Progress
+    color: yellow
+    description: Items currently being worked on
+    
+  # Review - Items waiting for review
+  - name: Review
+    color: orange
+    description: Items waiting for review
+    
+  # Done - Completed items
+  - name: Done
+    color: green
+    description: Completed items
+
+# Automation rules
+automation:
+  # Move to "In Progress" when assigned
+  - trigger: assigned
+    action: move
+    column: In Progress
+    
+  # Move to "Review" when pull request is opened
+  - trigger: pull_request.opened
+    action: move
+    column: Review
+    
+  # Move to "Done" when pull request is merged
+  - trigger: pull_request.merged
+    action: move
+    column: Done
+    
+  # Move to "Done" when issue is closed
+  - trigger: issues.closed
+    action: move
+    column: Done
+
+# Labels to automatically add to project
+auto_add_labels:
+  - bug
+  - enhancement
+  - documentation
+  - dependencies

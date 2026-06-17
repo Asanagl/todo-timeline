@@ -1,0 +1,68 @@
+name: Project Board
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, assigned, unassigned, labeled, unlabeled]
+  pull_request:
+    types: [opened, edited, closed, reopened, assigned, unassigned, labeled, unlabeled]
+
+permissions:
+  issues: write
+  pull-requests: write
+  repository-projects: write
+
+jobs:
+  project:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            // Configuration
+            const projectBoard = 1; // Project board number
+            const columns = {
+              backlog: 'Backlog',
+              todo: 'To Do',
+              inProgress: 'In Progress',
+              review: 'Review',
+              done: 'Done'
+            };
+            
+            // Get the issue or PR
+            const issue = context.payload.issue || context.payload.pull_request;
+            
+            if (!issue) {
+              console.log('No issue or PR found');
+              return;
+            }
+            
+            console.log(`Processing: ${issue.title}`);
+            
+            // Auto-assign to project board
+            try {
+              await github.rest.projects.createCard({
+                column_id: projectBoard,
+                content_id: issue.id,
+                content_type: issue.pull_request ? 'PullRequest' : 'Issue'
+              });
+              console.log(`Added to project board`);
+            } catch (error) {
+              console.log(`Already in project board or error: ${error.message}`);
+            }
+            
+            // Auto-move based on status
+            if (issue.state === 'closed') {
+              console.log('Issue/PR closed, moving to Done');
+              // Move to Done column
+            }
+            
+            // Auto-assign based on labels
+            const labels = issue.labels.map(l => l.name);
+            
+            if (labels.includes('bug')) {
+              console.log('Bug label found, consider priority');
+            }
+            
+            if (labels.includes('enhancement')) {
+              console.log('Enhancement label found');
+            }

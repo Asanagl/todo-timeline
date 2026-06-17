@@ -1,0 +1,77 @@
+# Build directories
+build/
+build_*/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Qt generated files
+*.pro.user
+*.qbs.user
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.autosave
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CMakeLists.txt.user
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Android
+android/build/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Qt Creator
+*.pro.user.*
+*.qbs.user.*
+
+# Misc
+*.log
+*.tmp
+*.temp
+
+# GitHub CLI config (contains auth tokens)
+.gh-config/

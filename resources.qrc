@@ -1,0 +1,13 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>qml/Main.qml</file>
+        <file>qml/TaskList.qml</file>
+        <file>qml/TaskItem.qml</file>
+        <file>qml/Timeline.qml</file>
+        <file>qml/TaskCreator.qml</file>
+        <file>qml/TaskEditor.qml</file>
+        <file>qml/DeleteConfirmDialog.qml</file>
+        <file>qml/Notification.qml</file>
+    </qresource>
+</RCC>

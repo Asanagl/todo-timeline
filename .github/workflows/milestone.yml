@@ -1,0 +1,42 @@
+name: Milestone
+
+on:
+  issues:
+    types: [opened, edited, milestoned, demilestoned]
+  pull_request:
+    types: [opened, edited, milestoned, demilestoned]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  milestone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            // Get the current milestone
+            const milestone = context.payload.issue?.milestone || context.payload.pull_request?.milestone;
+            
+            if (!milestone) {
+              console.log('No milestone set, skipping...');
+              return;
+            }
+            
+            console.log(`Milestone: ${milestone.title}`);
+            
+            // You can add custom logic here
+            // For example, auto-assign milestone based on labels
+            
+            const labels = context.payload.issue?.labels || context.payload.pull_request?.labels || [];
+            
+            // Example: Add milestone based on labels
+            if (labels.some(l => l.name === 'bug')) {
+              console.log('Bug label found, consider adding to next patch milestone');
+            }
+            
+            if (labels.some(l => l.name === 'enhancement')) {
+              console.log('Enhancement label found, consider adding to next minor milestone');
+            }

@@ -1,0 +1,36 @@
+name: 'Dependency Review'
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v3
+
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v3
+        with:
+          # Fail on any vulnerabilities
+          fail-on-severity: high
+          
+          # Use vulnerability database
+          vulnerability-check: true
+          
+          # Check for license issues
+          license-check: true
+          
+          # Deny specific licenses
+          deny-licenses: GPL-3.0, AGPL-3.0
+          
+          # Comment on PR with results
+          comment-summary-in-pr: always
+          
+          # Use custom configuration
+          config-file: .github/dependency-review-config.yml

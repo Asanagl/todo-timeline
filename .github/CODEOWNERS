@@ -1,0 +1,28 @@
+# These owners will be automatically requested for review
+# when someone opens a pull request.
+
+# Default owner for everything
+* @your-github-username
+
+# C++ source files
+src/ @your-github-username
+
+# QML files
+qml/ @your-github-username
+
+# Build system
+CMakeLists.txt @your-github-username
+*.cmake @your-github-username
+
+# Documentation
+*.md @your-github-username
+
+# GitHub configuration
+.github/ @your-github-username
+
+# Android specific
+android/ @your-github-username
+
+# Build scripts
+*.bat @your-github-username
+*.sh @your-github-username

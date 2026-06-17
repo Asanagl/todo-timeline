@@ -1,0 +1,105 @@
+# Configuration for probot-settings - https://github.com/probot/settings
+
+# Repository settings
+repository:
+  # Repository name
+  name: todo-timeline
+  
+  # Repository description
+  description: A cross-platform Todo application with timeline view built with Qt6/C++
+  
+  # Repository homepage
+  homepage: https://github.com/yourusername/todo-timeline
+  
+  # Repository topics
+  topics:
+    - qt
+    - cpp
+    - todo-app
+    - timeline
+    - cross-platform
+    - desktop-app
+    - android-app
+    - linux-app
+    - windows-app
+  
+  # Private repository
+  private: false
+  
+  # Enable issues
+  has_issues: true
+  
+  # Enable projects
+  has_projects: true
+  
+  # Enable wiki
+  has_wiki: true
+  
+  # Enable downloads
+  has_downloads: true
+  
+  # Default branch
+  default_branch: main
+  
+  # Allow squash merging
+  allow_squash_merge: true
+  
+  # Allow merge merging
+  allow_merge_commit: true
+  
+  # Allow rebase merging
+  allow_rebase_merge: true
+  
+  # Delete branch on merge
+  delete_branch_on_merge: true
+  
+  # Enable automatic deletion of head branches
+  enable_automated_dependency_releases: true
+
+# Branch protection rules
+branches:
+  - name: main
+    protection:
+      # Require pull request reviews
+      required_pull_request_reviews:
+        # Required approving reviews
+        required_approving_review_count: 1
+        
+        # Dismiss stale reviews
+        dismiss_stale_reviews: true
+        
+        # Require code owner reviews
+        require_code_owner_reviews: true
+        
+        # Restrict dismissals
+        restrict_dismissals: false
+      
+      # Require status checks
+      required_status_checks:
+        # Require branches to be up to date before merging
+        strict: true
+        
+        # Status checks that are required
+        contexts:
+          - build-windows
+          - build-linux
+          - build-android
+          - test
+      
+      # Enforce restrictions for administrators
+      enforce_admins: true
+      
+      # Require signed commits
+      require_linear_history: false
+      
+      # Allow force pushes
+      allow_force_pushes: false
+      
+      # Allow deletions
+      allow_deletions: false
+
+# Collaborators
+collaborators:
+  # Add collaborators here
+  # - username: octocat
+  #   permission: push

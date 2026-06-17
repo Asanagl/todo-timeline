@@ -1,0 +1,125 @@
+# GitHub Labels Configuration
+# This file defines the labels used in the repository
+
+# Bug related
+- name: bug
+  color: d73a4a
+  description: Something isn't working
+
+- name: bug-confirmed
+  color: e11d48
+  description: Confirmed bug that needs fixing
+
+- name: bug-unconfirmed
+  color: fbca04
+  description: Potential bug that needs investigation
+
+# Feature related
+- name: enhancement
+  color: a2eeef
+  description: New feature or request
+
+- name: feature-request
+  color: 84b6eb
+  description: Request for a new feature
+
+- name: feature-approved
+  color: 0e8a16
+  description: Feature request has been approved
+
+# Priority
+- name: priority: high
+  color: d73a4a
+  description: High priority issue
+
+- name: priority: medium
+  color: fbca04
+  description: Medium priority issue
+
+- name: priority: low
+  color: 0e8a16
+  description: Low priority issue
+
+# Status
+- name: status: in-progress
+  color: 1d76db
+  description: Currently being worked on
+
+- name: status: needs-review
+  color: fbca04
+  description: Needs review from maintainers
+
+- name: status: blocked
+  color: d73a4a
+  description: Blocked by another issue or dependency
+
+- name: status: wontfix
+  color: ffffff
+  description: This will not be worked on
+
+# Type
+- name: documentation
+  color: 0075ca
+  description: Improvements or additions to documentation
+
+- name: dependencies
+  color: 0366d6
+  description: Pull requests that update a dependency file
+
+- name: github-actions
+  color: 000000
+  description: Pull requests that update GitHub Actions code
+
+- name: cmake
+  color: 0e8a16
+  description: Pull requests that update CMake configuration
+
+# Platform
+- name: platform: windows
+  color: 1d76db
+  description: Windows specific issue
+
+- name: platform: linux
+  color: fbca04
+  description: Linux specific issue
+
+- name: platform: android
+  color: 0e8a16
+  description: Android specific issue
+
+# Component
+- name: component: ui
+  color: 84b6eb
+  description: User interface related
+
+- name: component: backend
+  color: 1d76db
+  description: Backend logic related
+
+- name: component: build
+  color: 0e8a16
+  description: Build system related
+
+# Good first issues
+- name: good first issue
+  color: 7057ff
+  description: Good for newcomers
+
+- name: help wanted
+  color: 008672
+  description: Extra attention is needed
+
+# Duplicate
+- name: duplicate
+  color: cfd3d7
+  description: This issue or pull request already exists
+
+# Invalid
+- name: invalid
+  color: e4e669
+  description: This doesn't seem right
+
+# Question
+- name: question
+  color: d876e3
+  description: Further information is requested

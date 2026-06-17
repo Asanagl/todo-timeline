@@ -1,0 +1,115 @@
+# Commitlint Configuration
+# https://commitlint.js.org/
+
+extends:
+  - '@commitlint/config-conventional'
+
+rules:
+  # Type rules
+  type-enum:
+    - 2
+    - always
+    - - feat
+      - fix
+      - docs
+      - style
+      - refactor
+      - perf
+      - test
+      - build
+      - ci
+      - chore
+      - revert
+
+  # Scope rules
+  scope-enum:
+    - 2
+    - always
+    - - timeline
+      - tasks
+      - ui
+      - build
+      - docs
+      - ci
+      - deps
+      - android
+      - linux
+      - windows
+
+  # Subject rules
+  subject-case:
+    - 2
+    - never
+    - - sentence-case
+      - start-case
+      - pascal-case
+      - upper-case
+
+  # Header rules
+  header-max-length:
+    - 2
+    - always
+    - 100
+
+  # Body rules
+  body-max-line-length:
+    - 1
+    - always
+    - 200
+
+  # Footer rules
+  footer-max-line-length:
+    - 1
+    - always
+    - 200
+
+  # Type rules
+  type-case:
+    - 2
+    - always
+    - lower-case
+
+  # Scope rules
+  scope-case:
+    - 2
+    - always
+    - lower-case
+
+  # Subject rules
+  subject-empty:
+    - 2
+    - never
+
+  # Type rules
+  type-empty:
+    - 2
+    - never
+
+  # Header rules
+  header-min-length:
+    - 2
+    - always
+    - 10
+
+help: |
+  **Possible commit types:**
+  
+  - `feat`: A new feature
+  - `fix`: A bug fix
+  - `docs`: Documentation changes
+  - `style`: Code style changes (formatting, missing semi-colons, etc)
+  - `refactor`: Code refactoring
+  - `perf`: Performance improvements
+  - `test`: Adding or updating tests
+  - `build`: Build system or external dependencies
+  - `ci`: CI configuration
+  - `chore`: Other changes
+  - `revert`: Revert a commit
+  
+  **Example commit messages:**
+  
+  ```
+  feat(timeline): add drag and drop support
+  fix(tasks): resolve completion animation issue
+  docs(readme): update build instructions
+  ```
