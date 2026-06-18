@@ -110,7 +110,9 @@ jobs:
         packages: 'platforms;android-34 build-tools;34.0.0'
 
     - name: Remove broken Android platforms
-      run: rm -rf /usr/local/lib/android/sdk/platforms/android-36-ext*
+      run: |
+        rm -rf /usr/local/lib/android/sdk/platforms/android-*-ext*
+        ls /usr/local/lib/android/sdk/platforms/
 
     - name: Set Qt environment
       run: |
