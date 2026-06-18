@@ -43,7 +43,7 @@ jobs:
       run: |
         $qtRoot = "${{ github.workspace }}/Qt/6.7.2/msvc2019_64"
         New-Item -ItemType Directory -Path deploy/TodoTimeline -Force
-        Copy-Item build/TodoApp.exe deploy/TodoTimeline/
+        Copy-Item build/Release/TodoApp.exe deploy/TodoTimeline/
         & "$qtRoot/bin/windeployqt.exe" --qmldir qml deploy/TodoTimeline/TodoApp.exe
         Compress-Archive -Path deploy/TodoTimeline -DestinationPath TodoTimeline-Windows-x64.zip
 
@@ -72,7 +72,7 @@ jobs:
     - name: Install Qt via aqtinstall
       run: |
         pip install aqtinstall
-        aqt install-qt linux desktop 6.7.2 gcc_64 -O ${{ github.workspace }}/Qt -m qtshadertools
+        aqt install-qt linux desktop 6.7.2 gcc_64 -O ${{ github.workspace }}/Qt
         aqt install-qt linux android 6.7.2 android_arm64_v8a -O ${{ github.workspace }}/Qt -m qtshadertools
 
     - name: Install Android SDK
