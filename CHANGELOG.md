@@ -5,6 +5,14 @@ All notable changes to the Todo Timeline project will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1](https://github.com/Asanagl/todo-timeline/compare/v1.1.0...v1.1.1) (2026-06-18)
+
+
+### Bug Fixes
+
+* **ci:** add QT_HOST_PATH for Android cross-compilation ([e3dca24](https://github.com/Asanagl/todo-timeline/commit/e3dca24337ae18589e7596a07ca5ca40e234b632))
+* **ci:** switch Windows to MSVC and use windeployqt for deployment ([98d6de9](https://github.com/Asanagl/todo-timeline/commit/98d6de915456cf8c89eaeb7fc2dab152fd9df24c))
+
 ## [1.0.0] - 2026-06-17
 
 ### Added
