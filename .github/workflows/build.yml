@@ -109,6 +109,9 @@ jobs:
       with:
         packages: 'platforms;android-34 build-tools;34.0.0'
 
+    - name: Remove broken Android platform
+      run: rm -rf /usr/local/lib/android/sdk/platforms/android-36-ext19
+
     - name: Set Qt environment
       run: |
         QT_HOST_ROOT="${{ github.workspace }}/Qt/6.6.3/gcc_64"
