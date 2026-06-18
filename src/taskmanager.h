@@ -229,16 +229,6 @@ private:
     void saveCategories();
     void loadCategories();
 
-    static void appendTask(QQmlListProperty<Task> *list, Task *task);
-    static qsizetype taskCount(QQmlListProperty<Task> *list);
-    static Task* task(QQmlListProperty<Task> *list, qsizetype index);
-    static void clearTasks(QQmlListProperty<Task> *list);
-
-    static void appendCategory(QQmlListProperty<Category> *list, Category *category);
-    static qsizetype categoryCount(QQmlListProperty<Category> *list);
-    static Category* category(QQmlListProperty<Category> *list, qsizetype index);
-    static void clearCategories(QQmlListProperty<Category> *list);
-
     QList<Task*> m_tasks;
     QList<Task*> m_scheduledTasks;
     QList<Category*> m_categories;

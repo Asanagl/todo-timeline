@@ -292,33 +292,15 @@ TaskManager::~TaskManager() {
 }
 
 QQmlListProperty<Task> TaskManager::tasks() {
-    return QQmlListProperty<Task>(this,
-        &TaskManager::appendTask,
-        &TaskManager::taskCount,
-        &TaskManager::task,
-        &TaskManager::clearTasks);
+    return QQmlListProperty<Task>(this, &m_tasks);
 }
 
 QQmlListProperty<Task> TaskManager::scheduledTasks() {
-    return QQmlListProperty<Task>(this,
-        nullptr,
-        [](QQmlListProperty<Task> *list) -> qsizetype {
-            auto *manager = static_cast<TaskManager*>(list->object);
-            return manager->m_scheduledTasks.count();
-        },
-        [](QQmlListProperty<Task> *list, qsizetype index) -> Task* {
-            auto *manager = static_cast<TaskManager*>(list->object);
-            return manager->m_scheduledTasks.value(index, nullptr);
-        },
-        nullptr);
+    return QQmlListProperty<Task>(this, &m_scheduledTasks);
 }
 
 QQmlListProperty<Category> TaskManager::categories() {
-    return QQmlListProperty<Category>(this,
-        &TaskManager::appendCategory,
-        &TaskManager::categoryCount,
-        &TaskManager::category,
-        &TaskManager::clearCategories);
+    return QQmlListProperty<Category>(this, &m_categories);
 }
 
 QString TaskManager::filterText() const { return m_filterText; }
@@ -902,56 +884,4 @@ bool TaskManager::importTasks(const QUrl &fileUrl) {
     return true;
 }
 
-// ========== Static QQmlListProperty callbacks ==========
-
-void TaskManager::appendTask(QQmlListProperty<Task> *list, Task *task) {
-    auto *manager = static_cast<TaskManager*>(list->object);
-    if (manager && task) {
-        manager->m_tasks.append(task);
-        manager->m_taskHash[task->id()] = task;
-    }
-}
-
-qsizetype TaskManager::taskCount(QQmlListProperty<Task> *list) {
-    auto *manager = static_cast<TaskManager*>(list->object);
-    return manager ? manager->m_tasks.count() : 0;
-}
-
-Task* TaskManager::task(QQmlListProperty<Task> *list, qsizetype index) {
-    auto *manager = static_cast<TaskManager*>(list->object);
-    if (!manager || index < 0 || index >= manager->m_tasks.size()) return nullptr;
-    return manager->m_tasks.at(index);
-}
-
-void TaskManager::clearTasks(QQmlListProperty<Task> *list) {
-    auto *manager = static_cast<TaskManager*>(list->object);
-    if (!manager) return;
-    manager->m_taskHash.clear();
-    manager->m_tasks.clear();
-}
-
-void TaskManager::appendCategory(QQmlListProperty<Category> *list, Category *category) {
-    auto *manager = static_cast<TaskManager*>(list->object);
-    if (manager && category) {
-        manager->m_categories.append(category);
-        manager->m_categoryHash[category->id()] = category;
-    }
-}
-
-qsizetype TaskManager::categoryCount(QQmlListProperty<Category> *list) {
-    auto *manager = static_cast<TaskManager*>(list->object);
-    return manager ? manager->m_categories.count() : 0;
-}
-
-Category* TaskManager::category(QQmlListProperty<Category> *list, qsizetype index) {
-    auto *manager = static_cast<TaskManager*>(list->object);
-    if (!manager || index < 0 || index >= manager->m_categories.size()) return nullptr;
-    return manager->m_categories.at(index);
-}
-
-void TaskManager::clearCategories(QQmlListProperty<Category> *list) {
-    auto *manager = static_cast<TaskManager*>(list->object);
-    if (!manager) return;
-    manager->m_categoryHash.clear();
-    manager->m_categories.clear();
-}
+// ========== End of TaskManager ==========
