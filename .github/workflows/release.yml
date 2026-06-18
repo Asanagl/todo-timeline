@@ -80,8 +80,8 @@ jobs:
       with:
         packages: 'platforms;android-34 build-tools;34.0.0'
 
-    - name: Remove broken Android platform
-      run: rm -rf /usr/local/lib/android/sdk/platforms/android-36-ext19
+    - name: Remove broken Android platforms
+      run: rm -rf /usr/local/lib/android/sdk/platforms/android-36-ext*
 
     - name: Set Qt environment
       run: |
