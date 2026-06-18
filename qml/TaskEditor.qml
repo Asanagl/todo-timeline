@@ -134,7 +134,7 @@ Dialog {
                         Layout.fillWidth: true
                         height: 36
                         radius: 8
-                        color: prioritySelector.currentIndex === index ? modelData.color : "white"
+                        color: prioritySelector.currentIndex === index ? modelData.color : (Material.theme === Material.Dark ? "#424242" : "white")
                         border.color: modelData.color
                         border.width: 2
 

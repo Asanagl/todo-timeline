@@ -14,13 +14,6 @@ Rectangle {
     property var task: null
     property bool isExpanded: false
 
-    // 阴影效果
-    layer.enabled: true
-    layer.effect: ShaderEffect {
-        property var color: Qt.rgba(0, 0, 0, 0.1)
-        property var radius: 8.0
-    }
-
     // 动画
     Behavior on height {
         NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
@@ -44,7 +37,6 @@ Rectangle {
 
             onToggled: {
                 taskManager.toggleTaskCompletion(task.id)
-                // 完成动画
                 if (checked) {
                     completionAnimation.start()
                 }
@@ -101,7 +93,7 @@ Rectangle {
                 id: descriptionLabel
                 text: task.description || "暂无描述"
                 font.pixelSize: 12
-                color: "#757575"
+                color: Material.theme === Material.Dark ? "#aaaaaa" : "#757575"
                 elide: Text.ElideRight
                 Layout.fillWidth: true
                 visible: isExpanded
@@ -117,10 +109,9 @@ Rectangle {
                 spacing: 8
                 visible: task.scheduled
 
-                Image {
-                    source: "qrc:/icons/schedule.svg"
-                    sourceSize: Qt.size(14, 14)
-                    opacity: 0.6
+                Label {
+                    text: "🕐"
+                    font.pixelSize: 12
                 }
 
                 Label {
@@ -145,9 +136,9 @@ Rectangle {
             radius: 2
             color: {
                 switch(task.priority) {
-                case 0: return "#4CAF50"  // 低优先级
-                case 1: return "#FF9800"  // 中优先级
-                case 2: return "#F44336"  // 高优先级
+                case 0: return "#4CAF50"
+                case 1: return "#FF9800"
+                case 2: return "#F44336"
                 default: return "#4CAF50"
                 }
             }
@@ -193,7 +184,7 @@ Rectangle {
     // 点击展开/收起
     MouseArea {
         anchors.fill: parent
-        anchors.leftMargin: 60  // 避免与其他交互冲突
+        anchors.leftMargin: 60
         onClicked: {
             isExpanded = !isExpanded
         }

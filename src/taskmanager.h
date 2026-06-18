@@ -12,12 +12,15 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QUrl>
-#include <QFileDialog>
+#include <QTimer>
+#include <QHash>
+#include <QRegularExpression>
+#include <QTimer>
 
 class Task : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString id READ id WRITE setId NOTIFY idChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
     Q_PROPERTY(QDateTime startTime READ startTime WRITE setStartTime NOTIFY startTimeChanged)
@@ -26,6 +29,9 @@ class Task : public QObject
     Q_PROPERTY(int priority READ priority WRITE setPriority NOTIFY priorityChanged)
     Q_PROPERTY(QString color READ color WRITE setColor NOTIFY colorChanged)
     Q_PROPERTY(bool scheduled READ scheduled WRITE setScheduled NOTIFY scheduledChanged)
+    Q_PROPERTY(QString category READ category WRITE setCategory NOTIFY categoryChanged)
+    Q_PROPERTY(bool hasReminder READ hasReminder WRITE setHasReminder NOTIFY hasReminderChanged)
+    Q_PROPERTY(QDateTime reminderTime READ reminderTime WRITE setReminderTime NOTIFY reminderTimeChanged)
 
 public:
     explicit Task(QObject *parent = nullptr);
@@ -58,8 +64,22 @@ public:
     bool scheduled() const;
     void setScheduled(bool scheduled);
 
+    QString category() const;
+    void setCategory(const QString &category);
+
+    bool hasReminder() const;
+    void setHasReminder(bool hasReminder);
+
+    QDateTime reminderTime() const;
+    void setReminderTime(const QDateTime &reminderTime);
+
     QJsonObject toJson() const;
     static Task* fromJson(const QJsonObject &json, QObject *parent = nullptr);
+
+    // Validation helpers
+    static bool isValidColor(const QString &color);
+    static QString sanitizeTitle(const QString &title);
+    static QString sanitizeDescription(const QString &description);
 
 signals:
     void idChanged();
@@ -71,6 +91,9 @@ signals:
     void priorityChanged();
     void colorChanged();
     void scheduledChanged();
+    void categoryChanged();
+    void hasReminderChanged();
+    void reminderTimeChanged();
 
 private:
     QString m_id;
@@ -82,6 +105,47 @@ private:
     int m_priority;
     QString m_color;
     bool m_scheduled;
+    QString m_category;
+    bool m_hasReminder;
+    QDateTime m_reminderTime;
+
+    static constexpr int MAX_TITLE_LENGTH = 200;
+    static constexpr int MAX_DESCRIPTION_LENGTH = 2000;
+};
+
+// Category class for folder functionality
+class Category : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString id READ id CONSTANT)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QString color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(int taskCount READ taskCount NOTIFY taskCountChanged)
+
+public:
+    explicit Category(const QString &name, const QString &color, QObject *parent = nullptr);
+
+    QString id() const;
+    QString name() const;
+    void setName(const QString &name);
+    QString color() const;
+    void setColor(const QString &color);
+    int taskCount() const;
+    void setTaskCount(int count);
+
+    QJsonObject toJson() const;
+    static Category* fromJson(const QJsonObject &json, QObject *parent = nullptr);
+
+signals:
+    void nameChanged();
+    void colorChanged();
+    void taskCountChanged();
+
+private:
+    QString m_id;
+    QString m_name;
+    QString m_color;
+    int m_taskCount;
 };
 
 class TaskManager : public QObject
@@ -89,30 +153,54 @@ class TaskManager : public QObject
     Q_OBJECT
     Q_PROPERTY(QQmlListProperty<Task> tasks READ tasks NOTIFY tasksChanged)
     Q_PROPERTY(QQmlListProperty<Task> scheduledTasks READ scheduledTasks NOTIFY scheduledTasksChanged)
+    Q_PROPERTY(QQmlListProperty<Category> categories READ categories NOTIFY categoriesChanged)
     Q_PROPERTY(QString filterText READ filterText WRITE setFilterText NOTIFY filterTextChanged)
+    Q_PROPERTY(QString currentCategory READ currentCategory WRITE setCurrentCategory NOTIFY currentCategoryChanged)
+    Q_PROPERTY(int totalTaskCount READ totalTaskCount NOTIFY tasksChanged)
+    Q_PROPERTY(int completedTaskCount READ completedTaskCount NOTIFY tasksChanged)
 
 public:
     explicit TaskManager(QObject *parent = nullptr);
+    ~TaskManager() override;
 
     QQmlListProperty<Task> tasks();
     QQmlListProperty<Task> scheduledTasks();
+    QQmlListProperty<Category> categories();
 
     QString filterText() const;
     void setFilterText(const QString &text);
 
+    QString currentCategory() const;
+    void setCurrentCategory(const QString &categoryId);
+
+    int totalTaskCount() const;
+    int completedTaskCount() const;
+
+    // Task operations
     Q_INVOKABLE void addTask(const QString &title, const QString &description);
+    Q_INVOKABLE void addTaskWithCategory(const QString &title, const QString &description, const QString &categoryId);
     Q_INVOKABLE void removeTask(const QString &taskId);
-    Q_INVOKABLE void updateTask(const QString &taskId, const QString &title, const QString &description);
     Q_INVOKABLE void updateTaskFull(const QString &taskId, const QString &title, const QString &description,
-                                     int priority, const QString &color);
+                                     int priority, const QString &color, const QString &categoryId);
     Q_INVOKABLE void toggleTaskCompletion(const QString &taskId);
     Q_INVOKABLE void scheduleTask(const QString &taskId, const QDateTime &startTime, const QDateTime &endTime);
     Q_INVOKABLE void unscheduleTask(const QString &taskId);
     Q_INVOKABLE void moveTask(const QString &taskId, const QDateTime &newStartTime);
+    Q_INVOKABLE void setTaskReminder(const QString &taskId, const QDateTime &reminderTime);
+    Q_INVOKABLE void clearTaskReminder(const QString &taskId);
 
+    // Category operations
+    Q_INVOKABLE void addCategory(const QString &name, const QString &color);
+    Q_INVOKABLE void removeCategory(const QString &categoryId);
+    Q_INVOKABLE void updateCategory(const QString &categoryId, const QString &name, const QString &color);
+
+    // Query operations
     Q_INVOKABLE Task* findTask(const QString &taskId) const;
+    Q_INVOKABLE Category* findCategory(const QString &categoryId) const;
     Q_INVOKABLE int taskCountFiltered() const;
+    Q_INVOKABLE QList<QObject*> tasksForCategory(const QString &categoryId) const;
 
+    // Persistence
     Q_INVOKABLE void saveTasks();
     Q_INVOKABLE void loadTasks();
     Q_INVOKABLE bool exportTasks(const QUrl &fileUrl);
@@ -121,24 +209,55 @@ public:
 signals:
     void tasksChanged();
     void scheduledTasksChanged();
+    void categoriesChanged();
     void filterTextChanged();
+    void currentCategoryChanged();
     void taskAdded(Task *task);
     void taskRemoved(const QString &taskId);
     void taskScheduled(Task *task);
     void taskUnscheduled(const QString &taskId);
+    void taskReminderTriggered(Task *task);
     void exportFinished(bool success, const QString &message);
     void importFinished(bool success, const QString &message);
 
 private:
+    void scheduleSave();
+    void rebuildScheduledList();
+    void updateCategoryTaskCounts();
+    bool validateTaskJson(const QJsonObject &json) const;
+    void checkReminders();
+    void saveCategories();
+    void loadCategories();
+
     static void appendTask(QQmlListProperty<Task> *list, Task *task);
     static int taskCount(QQmlListProperty<Task> *list);
-    static Task* task(QQmlListProperty<Task> *list, int index);
+    static Task* task(QQmlListProperty<Task> *list, qsizetype index);
     static void clearTasks(QQmlListProperty<Task> *list);
+
+    static void appendCategory(QQmlListProperty<Category> *list, Category *category);
+    static int categoryCount(QQmlListProperty<Category> *list);
+    static Category* category(QQmlListProperty<Category> *list, qsizetype index);
+    static void clearCategories(QQmlListProperty<Category> *list);
 
     QList<Task*> m_tasks;
     QList<Task*> m_scheduledTasks;
+    QList<Category*> m_categories;
+    QHash<QString, Task*> m_taskHash;  // Fast lookup by ID
+    QHash<QString, Category*> m_categoryHash;
     QString m_savePath;
     QString m_filterText;
+    QString m_currentCategory;
+    QTimer *m_saveTimer;
+    QTimer *m_reminderTimer;
+    bool m_loading;
+    int m_cachedFilteredCount;
+    bool m_filterCacheValid;
+
+    static constexpr int SAVE_DEBOUNCE_MS = 500;
+    static constexpr int REMINDER_CHECK_MS = 60000; // Check every minute
+    static constexpr int MAX_TASKS = 10000;
+    static constexpr int MAX_IMPORT_SIZE = 10 * 1024 * 1024; // 10 MB
+    static constexpr int MAX_CATEGORIES = 100;
 };
 
 #endif // TASKMANAGER_H

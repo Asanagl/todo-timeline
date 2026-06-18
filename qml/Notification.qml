@@ -52,8 +52,8 @@ Rectangle {
         NumberAnimation {
             target: notificationRoot
             property: "y"
-            from: notificationRoot.y + 20
-            to: notificationRoot.y
+            from: -20
+            to: 0
             duration: 300
             easing.type: Easing.OutQuad
         }

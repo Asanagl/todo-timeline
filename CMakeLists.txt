@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(TodoApp VERSION 1.0.0 LANGUAGES CXX)
+project(TodoApp VERSION 1.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,12 +18,14 @@ set(SOURCES
     src/main.cpp
     src/taskmanager.cpp
     src/timelinemodel.cpp
+    src/logger.cpp
 )
 
 # 头文件
 set(HEADERS
     src/taskmanager.h
     src/timelinemodel.h
+    src/logger.h
 )
 
 # QML 文件
@@ -33,6 +35,10 @@ set(QML_FILES
     qml/TaskItem.qml
     qml/Timeline.qml
     qml/TaskCreator.qml
+    qml/TaskEditor.qml
+    qml/Notification.qml
+    qml/DeleteConfirmDialog.qml
+    qml/CategoryDialog.qml
 )
 
 # 资源文件

@@ -8,6 +8,7 @@ Rectangle {
     color: Material.theme === Material.Dark ? "#303030" : "#f5f5f5"
 
     property alias listView: taskListView
+    property alias searchField: searchField
 
     ColumnLayout {
         anchors.fill: parent
@@ -131,13 +132,16 @@ Rectangle {
                 NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.InOutQuad }
             }
 
+            // 预计算一次 toLowerCase，避免每个 delegate 重复计算
+            property string filterLower: taskManager.filterText.toLowerCase()
+
             delegate: TaskItem {
                 width: taskListView.width - 32
                 task: modelData
                 visible: {
-                    if (taskManager.filterText === "") return true
-                    return modelData.title.toLowerCase().indexOf(taskManager.filterText.toLowerCase()) >= 0 ||
-                           modelData.description.toLowerCase().indexOf(taskManager.filterText.toLowerCase()) >= 0
+                    if (taskListView.filterLower === "") return true
+                    return (modelData.title.toLowerCase().indexOf(taskListView.filterLower) >= 0) ||
+                           (modelData.description.toLowerCase().indexOf(taskListView.filterLower) >= 0)
                 }
                 height: visible ? 80 : 0
                 opacity: visible ? 1.0 : 0.0
@@ -173,7 +177,7 @@ Rectangle {
             // 空状态提示
             Label {
                 anchors.centerIn: parent
-                text: taskManager.filterText !== "" ? "未找到匹配的任务" : "暂无任务\n点击 + 添加新任务"
+                text: taskListView.filterLower !== "" ? "未找到匹配的任务" : "暂无任务\n点击 + 添加新任务"
                 horizontalAlignment: Text.AlignHCenter
                 color: "#9e9e9e"
                 font.pixelSize: 16

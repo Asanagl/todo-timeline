@@ -90,7 +90,7 @@ ApplicationWindow {
             SplitView.minimumWidth: 300
 
             function focusSearchField() {
-                listView.forceActiveFocus()
+                searchField.forceActiveFocus()
             }
         }
 
@@ -119,6 +119,13 @@ ApplicationWindow {
             }
 
             ToolButton {
+                text: "分类"
+                onClicked: categoryDialog.open()
+                ToolTip.text: "管理分类"
+                ToolTip.visible: hovered
+            }
+
+            ToolButton {
                 text: "导入"
                 onClicked: importDialog.open()
                 ToolTip.text: "导入数据 (Ctrl+I)"
@@ -138,6 +145,13 @@ ApplicationWindow {
                 text: Qt.formatDate(new Date(), "yyyy年MM月dd日")
                 font.pixelSize: 14
                 color: "white"
+            }
+
+            Label {
+                text: taskManager.totalTaskCount + " 任务"
+                font.pixelSize: 12
+                color: "#ccc"
+                visible: taskManager.totalTaskCount > 0
             }
 
             Item { Layout.fillWidth: true }
@@ -291,6 +305,10 @@ ApplicationWindow {
             timeline.addTaskToTimeline(task)
         }
 
+        function onTaskReminderTriggered(task) {
+            reminderNotification.show("提醒: " + task.title + " 即将开始!")
+        }
+
         function onExportFinished(success, message) {
             notification.show(message)
         }
@@ -307,6 +325,21 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 80
         anchors.horizontalCenter: parent.horizontalCenter
+    }
+
+    // 提醒通知组件（特殊样式）
+    Notification {
+        id: reminderNotification
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 80
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "#F44336"  // 红色背景表示提醒
+    }
+
+    // 分类管理对话框
+    CategoryDialog {
+        id: categoryDialog
+        anchors.centerIn: parent
     }
 
     // ============ 启动时滚动到当前时间 ============

@@ -9,6 +9,10 @@ Rectangle {
 
     // 当前显示的日期
     property date currentDate: new Date()
+    // 预计算当前日期字符串，避免每个 delegate 重复格式化
+    property string currentDateStr: Qt.formatDate(currentDate, "yyyyMMdd")
+    // 每小时高度常量，避免硬编码散落各处
+    readonly property int hourHeight: 80
 
     ColumnLayout {
         anchors.fill: parent
@@ -90,12 +94,16 @@ Rectangle {
                 delegate: Rectangle {
                     id: hourDelegate
                     width: timelineListView.width
-                    height: 80
+                    height: hourHeight
                     color: isCurrentHour ? "#E3F2FD" : (Material.theme === Material.Dark ?
                         (index % 2 === 0 ? "#383838" : "#303030") :
                         (index % 2 === 0 ? "white" : "#fafafa"))
 
                     property int hour: index
+                    // 缓存默认颜色，避免 onExited 重复计算
+                    property color baseColor: isCurrentHour ? "#E3F2FD" : (Material.theme === Material.Dark ?
+                        (index % 2 === 0 ? "#383838" : "#303030") :
+                        (index % 2 === 0 ? "white" : "#fafafa"))
 
                     // 时间标签
                     RowLayout {
@@ -168,9 +176,7 @@ Rectangle {
 
                         onExited: {
                             isHovered = false
-                            hourDelegate.color = isCurrentHour ? "#E3F2FD" : (Material.theme === Material.Dark ?
-                                (index % 2 === 0 ? "#383838" : "#303030") :
-                                (index % 2 === 0 ? "white" : "#fafafa"))
+                            hourDelegate.color = hourDelegate.baseColor
                             dropIndicator.visible = false
                         }
                     }
@@ -207,16 +213,15 @@ Rectangle {
                         }
                     }
 
-                    // 已安排的任务显示
+                    // 已安排的任务显示 — 使用 currentDateStr 避免重复格式化
                     Repeater {
                         model: {
                             var scheduled = []
                             for (var i = 0; i < taskManager.scheduledTasks.length; i++) {
                                 var task = taskManager.scheduledTasks[i]
                                 if (task.scheduled && task.startTime && task.endTime) {
-                                    var taskHour = task.startTime.getHours()
-                                    if (taskHour === hour && 
-                                        Qt.formatDate(task.startTime, "yyyyMMdd") === Qt.formatDate(currentDate, "yyyyMMdd")) {
+                                    if (task.startTime.getHours() === hour &&
+                                        Qt.formatDate(task.startTime, "yyyyMMdd") === currentDateStr) {
                                         scheduled.push(task)
                                     }
                                 }
@@ -256,8 +261,8 @@ Rectangle {
                     x: 0
                     y: {
                         var now = new Date()
-                        if (Qt.formatDate(now, "yyyyMMdd") === Qt.formatDate(currentDate, "yyyyMMdd")) {
-                            return (now.getHours() * 80) + (now.getMinutes() / 60 * 80)
+                        if (Qt.formatDate(now, "yyyyMMdd") === currentDateStr) {
+                            return (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
                         }
                         return -100 // 隐藏
                     }
@@ -294,34 +299,32 @@ Rectangle {
 
     // 添加任务到时间轴
     function addTaskToTimeline(task) {
-        // 刷新时间轴显示
         timelineListView.forceLayout()
     }
 
     // 滚动到当前时间
     function scrollToCurrentTime() {
         var now = new Date()
-        var y = (now.getHours() * 80) + (now.getMinutes() / 60 * 80)
+        var y = (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
         timelineListView.contentY = y - timelineListView.height / 2
     }
 
     // 初始化
     Component.onCompleted: {
         timelineModel.currentDate = currentDate
-        // 延迟滚动到当前时间
         Qt.callLater(scrollToCurrentTime)
     }
 
     // 定时器更新当前时间线
     Timer {
-        interval: 60000 // 每分钟更新
+        interval: 60000
         running: true
         repeat: true
         onTriggered: {
             currentTimeLine.y = {
                 var now = new Date()
-                if (Qt.formatDate(now, "yyyyMMdd") === Qt.formatDate(currentDate, "yyyyMMdd")) {
-                    return (now.getHours() * 80) + (now.getMinutes() / 60 * 80)
+                if (Qt.formatDate(now, "yyyyMMdd") === currentDateStr) {
+                    return (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
                 }
                 return -100
             }

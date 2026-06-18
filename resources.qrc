@@ -9,5 +9,13 @@
         <file>qml/TaskEditor.qml</file>
         <file>qml/DeleteConfirmDialog.qml</file>
         <file>qml/Notification.qml</file>
+        <file>qml/CategoryDialog.qml</file>
+        <file>icons/add.svg</file>
+        <file>icons/close.svg</file>
+        <file>icons/search.svg</file>
+        <file>icons/edit.svg</file>
+        <file>icons/delete.svg</file>
+        <file>icons/chevron_left.svg</file>
+        <file>icons/chevron_right.svg</file>
     </qresource>
 </RCC>

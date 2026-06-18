@@ -8,8 +8,10 @@ Dialog {
     title: "创建新任务"
     modal: true
     anchors.centerIn: parent
-    width: 400
-    height: 500
+    width: 420
+    height: 580
+
+    property string selectedCategoryId: ""
 
     // 动画
     enter: Transition {
@@ -23,33 +25,31 @@ Dialog {
     }
 
     contentItem: ColumnLayout {
-        spacing: 20
+        spacing: 16
 
         // 标题输入
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 6
 
             Label {
                 text: "任务标题 *"
                 font.bold: true
+                font.pixelSize: 13
             }
 
             TextField {
                 id: titleField
                 Layout.fillWidth: true
                 placeholderText: "输入任务标题..."
-                font.pixelSize: 16
+                font.pixelSize: 15
+                maximumLength: 200
 
-                // 输入验证
                 background: Rectangle {
                     radius: 8
                     border.color: titleField.text.length > 0 ? "#4CAF50" : (titleField.activeFocus ? "#2196F3" : "#e0e0e0")
                     border.width: titleField.activeFocus ? 2 : 1
-
-                    Behavior on border.color {
-                        ColorAnimation { duration: 200 }
-                    }
+                    Behavior on border.color { ColorAnimation { duration: 200 } }
                 }
             }
         }
@@ -57,16 +57,17 @@ Dialog {
         // 描述输入
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 6
 
             Label {
                 text: "任务描述"
                 font.bold: true
+                font.pixelSize: 13
             }
 
             Flickable {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 100
+                Layout.preferredHeight: 80
                 contentHeight: descriptionField.implicitHeight
                 clip: true
 
@@ -75,7 +76,7 @@ Dialog {
                     width: parent.width
                     placeholderText: "输入任务描述..."
                     wrapMode: TextArea.Wrap
-                    font.pixelSize: 14
+                    font.pixelSize: 13
 
                     background: Rectangle {
                         radius: 8
@@ -86,14 +87,48 @@ Dialog {
             }
         }
 
+        // 分类选择
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            Label {
+                text: "分类"
+                font.bold: true
+                font.pixelSize: 13
+            }
+
+            ComboBox {
+                id: categoryComboBox
+                Layout.fillWidth: true
+                model: ["无分类"].concat(taskManager.categories ? 
+                    taskManager.categories.map(function(c) { return c.name }) : [])
+                
+                onCurrentIndexChanged: {
+                    if (currentIndex === 0) {
+                        selectedCategoryId = ""
+                    } else if (taskManager.categories && currentIndex > 0) {
+                        selectedCategoryId = taskManager.categories[currentIndex - 1].id
+                    }
+                }
+
+                background: Rectangle {
+                    radius: 8
+                    border.color: categoryComboBox.activeFocus ? "#2196F3" : "#e0e0e0"
+                    border.width: categoryComboBox.activeFocus ? 2 : 1
+                }
+            }
+        }
+
         // 优先级选择
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 6
 
             Label {
                 text: "优先级"
                 font.bold: true
+                font.pixelSize: 13
             }
 
             RowLayout {
@@ -109,9 +144,9 @@ Dialog {
 
                     delegate: Rectangle {
                         width: 80
-                        height: 40
+                        height: 36
                         radius: 8
-                        color: prioritySelector.currentIndex === index ? modelData.color : "white"
+                        color: prioritySelector.currentIndex === index ? modelData.color : (Material.theme === Material.Dark ? "#424242" : "white")
                         border.color: modelData.color
                         border.width: 2
 
@@ -120,40 +155,33 @@ Dialog {
                             text: modelData.text
                             color: prioritySelector.currentIndex === index ? "white" : modelData.color
                             font.bold: true
+                            font.pixelSize: 13
                         }
 
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: {
-                                prioritySelector.currentIndex = index
-                            }
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: prioritySelector.currentIndex = index
                         }
 
-                        // 选中动画
                         scale: prioritySelector.currentIndex === index ? 1.05 : 1.0
-                        Behavior on scale {
-                            NumberAnimation { duration: 150 }
-                        }
+                        Behavior on scale { NumberAnimation { duration: 150 } }
                     }
                 }
 
-                // 优先级选择器状态
-                Item {
-                    id: prioritySelector
-                    property int currentIndex: 0
-                    visible: false
-                }
+                Item { id: prioritySelector; property int currentIndex: 0; visible: false }
             }
         }
 
         // 时间设置（可选）
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 6
 
             Label {
                 text: "安排时间（可选）"
                 font.bold: true
+                font.pixelSize: 13
             }
 
             RowLayout {
@@ -190,9 +218,7 @@ Dialog {
                         visibleItemCount: 3
                     }
 
-                    Label {
-                        text: ":"
-                    }
+                    Label { text: ":" }
 
                     Tumbler {
                         id: startMinuteTumbler
@@ -220,9 +246,7 @@ Dialog {
                         visibleItemCount: 3
                     }
 
-                    Label {
-                        text: ":"
-                    }
+                    Label { text: ":" }
 
                     Tumbler {
                         id: endMinuteTumbler
@@ -235,14 +259,87 @@ Dialog {
             }
         }
 
+        // 提醒设置
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 6
+
+            Label {
+                text: "提醒设置（可选）"
+                font.bold: true
+                font.pixelSize: 13
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+
+                CheckBox {
+                    id: reminderCheckBox
+                    text: "设置提醒"
+                }
+
+                Item { Layout.fillWidth: true }
+            }
+
+            RowLayout {
+                visible: reminderCheckBox.checked
+                Layout.fillWidth: true
+                spacing: 12
+
+                Label {
+                    text: "提醒时间:"
+                    Layout.preferredWidth: 80
+                }
+
+                SpinBox {
+                    id: reminderHourSpinBox
+                    from: 0
+                    to: 23
+                    value: new Date().getHours()
+                    editable: true
+                }
+
+                Label { text: ":" }
+
+                SpinBox {
+                    id: reminderMinuteSpinBox
+                    from: 0
+                    to: 59
+                    value: 0
+                    editable: true
+                }
+
+                Label {
+                    text: "提前"
+                    color: Material.theme === Material.Dark ? "#aaa" : "#666"
+                }
+
+                SpinBox {
+                    id: reminderAdvanceSpinBox
+                    from: 0
+                    to: 120
+                    value: 15
+                    stepSize: 5
+                    editable: true
+                }
+
+                Label {
+                    text: "分钟"
+                    color: Material.theme === Material.Dark ? "#aaa" : "#666"
+                }
+            }
+        }
+
         // 颜色选择
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 6
 
             Label {
                 text: "任务颜色"
                 font.bold: true
+                font.pixelSize: 13
             }
 
             Flow {
@@ -253,44 +350,34 @@ Dialog {
                     model: ["#4A90D9", "#4CAF50", "#FF9800", "#F44336", "#9C27B0", "#00BCD4"]
 
                     delegate: Rectangle {
-                        width: 32
-                        height: 32
-                        radius: 16
+                        width: 30
+                        height: 30
+                        radius: 15
                         color: modelData
                         border.color: colorSelector.currentIndex === index ? "white" : "transparent"
-                        border.width: 3
+                        border.width: 2
 
-                        // 选中指示器
                         Rectangle {
                             anchors.centerIn: parent
-                            width: 16
-                            height: 16
-                            radius: 8
+                            width: 14
+                            height: 14
+                            radius: 7
                             color: "white"
                             visible: colorSelector.currentIndex === index
                         }
 
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: {
-                                colorSelector.currentIndex = index
-                            }
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: colorSelector.currentIndex = index
                         }
 
-                        // 选中动画
                         scale: colorSelector.currentIndex === index ? 1.2 : 1.0
-                        Behavior on scale {
-                            NumberAnimation { duration: 150 }
-                        }
+                        Behavior on scale { NumberAnimation { duration: 150 } }
                     }
                 }
 
-                // 颜色选择器状态
-                Item {
-                    id: colorSelector
-                    property int currentIndex: 0
-                    visible: false
-                }
+                Item { id: colorSelector; property int currentIndex: 0; visible: false }
             }
         }
 
@@ -298,6 +385,7 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             spacing: 12
+            Layout.topMargin: 8
 
             Button {
                 text: "取消"
@@ -314,11 +402,15 @@ Dialog {
                 Material.background: Material.accent
                 Material.foreground: "white"
                 Layout.fillWidth: true
-                enabled: titleField.text.length > 0
+                enabled: titleField.text.trim().length > 0
 
                 onClicked: {
                     // 创建任务
-                    taskManager.addTask(titleField.text, descriptionField.text)
+                    if (selectedCategoryId !== "") {
+                        taskManager.addTaskWithCategory(titleField.text, descriptionField.text, selectedCategoryId)
+                    } else {
+                        taskManager.addTask(titleField.text, descriptionField.text)
+                    }
 
                     // 如果安排了时间
                     if (scheduleCheckBox.checked) {
@@ -327,26 +419,26 @@ Dialog {
                         var endTime = new Date()
                         endTime.setHours(endHourTumbler.currentIndex, endMinuteTumbler.currentIndex, 0, 0)
 
-                        // 获取刚创建的任务（最后一个）
                         var tasks = taskManager.tasks
                         if (tasks.length > 0) {
                             var newTask = tasks[tasks.length - 1]
                             taskManager.scheduleTask(newTask.id, startTime, endTime)
+
+                            // 设置提醒
+                            if (reminderCheckBox.checked) {
+                                var reminderTime = new Date(startTime)
+                                reminderTime.setMinutes(reminderTime.getMinutes() - reminderAdvanceSpinBox.value)
+                                taskManager.setTaskReminder(newTask.id, reminderTime)
+                            }
                         }
                     }
 
                     taskCreatorDialog.close()
                     resetForm()
-
-                    // 成功动画
-                    successAnimation.start()
                 }
 
-                // 按钮动画
                 scale: pressed ? 0.95 : 1.0
-                Behavior on scale {
-                    NumberAnimation { duration: 100 }
-                }
+                Behavior on scale { NumberAnimation { duration: 100 } }
             }
         }
     }
@@ -357,18 +449,17 @@ Dialog {
         descriptionField.text = ""
         prioritySelector.currentIndex = 0
         colorSelector.currentIndex = 0
+        categoryComboBox.currentIndex = 0
+        selectedCategoryId = ""
         scheduleCheckBox.checked = false
+        reminderCheckBox.checked = false
         startHourTumbler.currentIndex = new Date().getHours()
         startMinuteTumbler.currentIndex = 0
         endHourTumbler.currentIndex = (new Date().getHours() + 1) % 24
         endMinuteTumbler.currentIndex = 0
-    }
-
-    // 成功动画
-    SequentialAnimation {
-        id: successAnimation
-
-        // 这里可以添加成功提示动画
+        reminderHourSpinBox.value = new Date().getHours()
+        reminderMinuteSpinBox.value = 0
+        reminderAdvanceSpinBox.value = 15
     }
 
     // 打开对话框时重置
