@@ -24,6 +24,7 @@
             android:label="Todo Timeline"
             android:launchMode="singleTop"
             android:screenOrientation="unspecified"
+            android:exported="true"
             android:theme="@style/AppTheme">
 
             <intent-filter>
