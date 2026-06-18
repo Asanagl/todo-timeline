@@ -292,7 +292,7 @@ TaskManager::~TaskManager() {
 }
 
 QQmlListProperty<Task> TaskManager::tasks() {
-    return QQmlListProperty<Task>(this, this,
+    return QQmlListProperty<Task>(this,
         &TaskManager::appendTask,
         &TaskManager::taskCount,
         &TaskManager::task,
@@ -300,21 +300,21 @@ QQmlListProperty<Task> TaskManager::tasks() {
 }
 
 QQmlListProperty<Task> TaskManager::scheduledTasks() {
-    return QQmlListProperty<Task>(this, this,
+    return QQmlListProperty<Task>(this,
         nullptr,
-        [](QQmlListProperty<Task> *list) -> int {
-            auto *manager = static_cast<TaskManager*>(list->data);
+        [](QQmlListProperty<Task> *list) -> qsizetype {
+            auto *manager = static_cast<TaskManager*>(list->object);
             return manager->m_scheduledTasks.count();
         },
-        [](QQmlListProperty<Task> *list, int index) -> Task* {
-            auto *manager = static_cast<TaskManager*>(list->data);
+        [](QQmlListProperty<Task> *list, qsizetype index) -> Task* {
+            auto *manager = static_cast<TaskManager*>(list->object);
             return manager->m_scheduledTasks.value(index, nullptr);
         },
         nullptr);
 }
 
 QQmlListProperty<Category> TaskManager::categories() {
-    return QQmlListProperty<Category>(this, this,
+    return QQmlListProperty<Category>(this,
         &TaskManager::appendCategory,
         &TaskManager::categoryCount,
         &TaskManager::category,
@@ -403,7 +403,7 @@ void TaskManager::checkReminders() {
 
 void TaskManager::saveCategories() {
     QJsonArray categoriesArray;
-    categoriesArray.reserve(m_categories.size());
+    // Note: QJsonArray does not support reserve in Qt6
     for (const Category *category : m_categories) {
         categoriesArray.append(category->toJson());
     }
@@ -704,7 +704,7 @@ void TaskManager::updateCategory(const QString &categoryId, const QString &name,
 
 void TaskManager::saveTasks() {
     QJsonArray tasksArray;
-    tasksArray.reserve(m_tasks.size());
+    // Note: QJsonArray does not support reserve in Qt6
     for (const Task *task : m_tasks) {
         tasksArray.append(task->toJson());
     }
@@ -782,13 +782,13 @@ bool TaskManager::exportTasks(const QUrl &fileUrl) {
     if (filePath.isEmpty()) return false;
 
     QJsonArray tasksArray;
-    tasksArray.reserve(m_tasks.size());
+    // Note: QJsonArray does not support reserve in Qt6
     for (const Task *task : m_tasks) {
         tasksArray.append(task->toJson());
     }
 
     QJsonArray categoriesArray;
-    categoriesArray.reserve(m_categories.size());
+    // Note: QJsonArray does not support reserve in Qt6
     for (const Category *category : m_categories) {
         categoriesArray.append(category->toJson());
     }
@@ -905,52 +905,52 @@ bool TaskManager::importTasks(const QUrl &fileUrl) {
 // ========== Static QQmlListProperty callbacks ==========
 
 void TaskManager::appendTask(QQmlListProperty<Task> *list, Task *task) {
-    auto *manager = static_cast<TaskManager*>(list->data);
+    auto *manager = static_cast<TaskManager*>(list->object);
     if (manager && task) {
         manager->m_tasks.append(task);
         manager->m_taskHash[task->id()] = task;
     }
 }
 
-int TaskManager::taskCount(QQmlListProperty<Task> *list) {
-    auto *manager = static_cast<TaskManager*>(list->data);
+qsizetype TaskManager::taskCount(QQmlListProperty<Task> *list) {
+    auto *manager = static_cast<TaskManager*>(list->object);
     return manager ? manager->m_tasks.count() : 0;
 }
 
 Task* TaskManager::task(QQmlListProperty<Task> *list, qsizetype index) {
-    auto *manager = static_cast<TaskManager*>(list->data);
+    auto *manager = static_cast<TaskManager*>(list->object);
     if (!manager || index < 0 || index >= manager->m_tasks.size()) return nullptr;
     return manager->m_tasks.at(index);
 }
 
 void TaskManager::clearTasks(QQmlListProperty<Task> *list) {
-    auto *manager = static_cast<TaskManager*>(list->data);
+    auto *manager = static_cast<TaskManager*>(list->object);
     if (!manager) return;
     manager->m_taskHash.clear();
     manager->m_tasks.clear();
 }
 
 void TaskManager::appendCategory(QQmlListProperty<Category> *list, Category *category) {
-    auto *manager = static_cast<TaskManager*>(list->data);
+    auto *manager = static_cast<TaskManager*>(list->object);
     if (manager && category) {
         manager->m_categories.append(category);
         manager->m_categoryHash[category->id()] = category;
     }
 }
 
-int TaskManager::categoryCount(QQmlListProperty<Category> *list) {
-    auto *manager = static_cast<TaskManager*>(list->data);
+qsizetype TaskManager::categoryCount(QQmlListProperty<Category> *list) {
+    auto *manager = static_cast<TaskManager*>(list->object);
     return manager ? manager->m_categories.count() : 0;
 }
 
 Category* TaskManager::category(QQmlListProperty<Category> *list, qsizetype index) {
-    auto *manager = static_cast<TaskManager*>(list->data);
+    auto *manager = static_cast<TaskManager*>(list->object);
     if (!manager || index < 0 || index >= manager->m_categories.size()) return nullptr;
     return manager->m_categories.at(index);
 }
 
 void TaskManager::clearCategories(QQmlListProperty<Category> *list) {
-    auto *manager = static_cast<TaskManager*>(list->data);
+    auto *manager = static_cast<TaskManager*>(list->object);
     if (!manager) return;
     manager->m_categoryHash.clear();
     manager->m_categories.clear();

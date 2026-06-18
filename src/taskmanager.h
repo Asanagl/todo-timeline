@@ -230,12 +230,12 @@ private:
     void loadCategories();
 
     static void appendTask(QQmlListProperty<Task> *list, Task *task);
-    static int taskCount(QQmlListProperty<Task> *list);
+    static qsizetype taskCount(QQmlListProperty<Task> *list);
     static Task* task(QQmlListProperty<Task> *list, qsizetype index);
     static void clearTasks(QQmlListProperty<Task> *list);
 
     static void appendCategory(QQmlListProperty<Category> *list, Category *category);
-    static int categoryCount(QQmlListProperty<Category> *list);
+    static qsizetype categoryCount(QQmlListProperty<Category> *list);
     static Category* category(QQmlListProperty<Category> *list, qsizetype index);
     static void clearCategories(QQmlListProperty<Category> *list);
 
@@ -250,8 +250,8 @@ private:
     QTimer *m_saveTimer;
     QTimer *m_reminderTimer;
     bool m_loading;
-    int m_cachedFilteredCount;
-    bool m_filterCacheValid;
+    mutable int m_cachedFilteredCount;
+    mutable bool m_filterCacheValid;
 
     static constexpr int SAVE_DEBOUNCE_MS = 500;
     static constexpr int REMINDER_CHECK_MS = 60000; // Check every minute
