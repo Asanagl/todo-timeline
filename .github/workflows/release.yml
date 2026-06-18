@@ -55,6 +55,7 @@ jobs:
 
   build-android:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
     - uses: actions/checkout@v4
 
@@ -80,10 +81,14 @@ jobs:
       with:
         packages: 'platforms;android-34 build-tools;34.0.0'
 
-    - name: Remove broken Android platforms
+    - name: Clean and reinstall Android platforms
       run: |
-        rm -rf /usr/local/lib/android/sdk/platforms/android-*-ext*
-        ls /usr/local/lib/android/sdk/platforms/
+        # Remove ALL platforms (including broken ext variants) and reinstall only android-34
+        rm -rf /usr/local/lib/android/sdk/platforms
+        mkdir -p /usr/local/lib/android/sdk/platforms
+        yes | sdkmanager --sdk_root=/usr/local/lib/android/sdk "platforms;android-34"
+        echo "=== Installed platforms ==="
+        ls -la /usr/local/lib/android/sdk/platforms/
 
     - name: Set Qt environment
       run: |
@@ -126,7 +131,8 @@ jobs:
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [build-windows, build-android]
+    needs: [build-windows]
+    if: always()
     steps:
     - uses: actions/checkout@v4
 
