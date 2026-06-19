@@ -189,32 +189,4 @@ Rectangle {
             isExpanded = !isExpanded
         }
     }
-
-    // 进入动画
-    Component.onCompleted: {
-        opacity = 0
-        scale = 0.8
-        enterAnimation.start()
-    }
-
-    ParallelAnimation {
-        id: enterAnimation
-
-        NumberAnimation {
-            target: taskItemRoot
-            property: "opacity"
-            from: 0
-            to: 1.0
-            duration: 400
-        }
-
-        NumberAnimation {
-            target: taskItemRoot
-            property: "scale"
-            from: 0.8
-            to: 1.0
-            duration: 400
-            easing.type: Easing.OutBack
-        }
-    }
 }

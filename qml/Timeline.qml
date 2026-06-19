@@ -14,6 +14,14 @@ Rectangle {
     // 每小时高度常量，避免硬编码散落各处
     readonly property int hourHeight: 80
 
+    function getCurrentTimeY() {
+        var now = new Date()
+        if (Qt.formatDate(now, "yyyyMMdd") === currentDateStr) {
+            return (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
+        }
+        return -100 // 隐藏
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -140,10 +148,10 @@ Rectangle {
                         radius: 6
                         color: "#1976D2"
 
-                        // 脉冲动画
+                        // 脉冲动画 — 性能优化：只在可见时运行
                         SequentialAnimation on scale {
                             loops: Animation.Infinite
-                            running: isCurrentHour
+                            running: isCurrentHour && visible
                             NumberAnimation { from: 1.0; to: 1.5; duration: 1000; easing.type: Easing.InOutQuad }
                             NumberAnimation { from: 1.5; to: 1.0; duration: 1000; easing.type: Easing.InOutQuad }
                         }
@@ -157,12 +165,12 @@ Rectangle {
 
                         property bool isHovered: false
 
-                        onDropped: function(event) {
-                            if (event.source.taskId) {
+                        onDropped: function(drop) {
+                            if (drop.source.task && drop.source.task.id) {
                                 var startTime = new Date(currentDate)
                                 startTime.setHours(hour, 0, 0, 0)
                                 var endTime = new Date(startTime.getTime() + 3600000) // 默认1小时
-                                taskManager.scheduleTask(event.source.taskId, startTime, endTime)
+                                taskManager.scheduleTask(drop.source.task.id, startTime, endTime)
                                 notification.show("任务已安排到 " + Qt.formatTime(startTime, "HH:mm"))
                             }
                             isHovered = false
@@ -213,21 +221,9 @@ Rectangle {
                         }
                     }
 
-                    // 已安排的任务显示 — 使用 currentDateStr 避免重复格式化
+                    // 已安排的任务显示 — 性能优化：使用 C++ 端 tasksForHour 避免遍历所有 scheduledTasks
                     Repeater {
-                        model: {
-                            var scheduled = []
-                            for (var i = 0; i < taskManager.scheduledTasks.length; i++) {
-                                var task = taskManager.scheduledTasks[i]
-                                if (task.scheduled && task.startTime && task.endTime) {
-                                    if (task.startTime.getHours() === hour &&
-                                        Qt.formatDate(task.startTime, "yyyyMMdd") === currentDateStr) {
-                                        scheduled.push(task)
-                                    }
-                                }
-                            }
-                            return scheduled
-                        }
+                        model: taskManager.tasksForHour(currentDate, hour)
 
                         Rectangle {
                             anchors.left: parent.left
@@ -259,13 +255,7 @@ Rectangle {
                     id: currentTimeLine
                     parent: timelineListView.contentItem
                     x: 0
-                    y: {
-                        var now = new Date()
-                        if (Qt.formatDate(now, "yyyyMMdd") === currentDateStr) {
-                            return (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
-                        }
-                        return -100 // 隐藏
-                    }
+                    y: getCurrentTimeY()
                     width: timelineListView.width
                     height: 2
                     visible: y >= 0
@@ -321,13 +311,7 @@ Rectangle {
         running: true
         repeat: true
         onTriggered: {
-            currentTimeLine.y = {
-                var now = new Date()
-                if (Qt.formatDate(now, "yyyyMMdd") === currentDateStr) {
-                    return (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
-                }
-                return -100
-            }
+            currentTimeLine.y = getCurrentTimeY()
         }
     }
 }

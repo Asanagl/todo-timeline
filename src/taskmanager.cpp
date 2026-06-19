@@ -259,6 +259,8 @@ TaskManager::TaskManager(QObject *parent)
     , m_loading(false)
     , m_cachedFilteredCount(0)
     , m_filterCacheValid(false)
+    , m_cachedCompletedCount(0)
+    , m_completedCountDirty(true)
 {
     m_savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir dir(m_savePath);
@@ -303,6 +305,40 @@ QQmlListProperty<Category> TaskManager::categories() {
     return QQmlListProperty<Category>(this, &m_categories);
 }
 
+// 性能优化：返回 C++ 端过滤后的列表，避免 QML delegate.visible 反模式
+QQmlListProperty<Task> TaskManager::filteredTasks() {
+    if (m_filterCacheValid) {
+        return QQmlListProperty<Task>(this, &m_filteredTasks);
+    }
+    rebuildFilteredTasks();
+    return QQmlListProperty<Task>(this, &m_filteredTasks);
+}
+
+void TaskManager::rebuildFilteredTasks() {
+    m_filteredTasks.clear();
+    m_filteredTasks.reserve(m_tasks.size());
+    const QString lower = m_filterText.toLower();
+    for (Task *task : m_tasks) {
+        // 分类过滤
+        if (!m_currentCategory.isEmpty() && task->category() != m_currentCategory) {
+            continue;
+        }
+        // 文本过滤
+        if (m_filterText.isEmpty() ||
+            task->title().contains(lower, Qt::CaseInsensitive) ||
+            task->description().contains(lower, Qt::CaseInsensitive)) {
+            m_filteredTasks.append(task);
+        }
+    }
+    m_filterCacheValid = true;
+    m_cachedFilteredCount = m_filteredTasks.size();
+}
+
+void TaskManager::invalidateFilter() {
+    m_filterCacheValid = false;
+    emit filteredTasksChanged();
+}
+
 QString TaskManager::filterText() const { return m_filterText; }
 
 void TaskManager::setFilterText(const QString &text) {
@@ -310,7 +346,7 @@ void TaskManager::setFilterText(const QString &text) {
         m_filterText = text;
         m_filterCacheValid = false;
         emit filterTextChanged();
-        emit tasksChanged();
+        emit filteredTasksChanged();
     }
 }
 
@@ -320,17 +356,21 @@ void TaskManager::setCurrentCategory(const QString &categoryId) {
         m_currentCategory = categoryId;
         m_filterCacheValid = false;
         emit currentCategoryChanged();
-        emit tasksChanged();
+        emit filteredTasksChanged();
     }
 }
 
 int TaskManager::totalTaskCount() const { return m_tasks.size(); }
 
+// 性能优化：缓存已完成任务数量，避免每次遍历
 int TaskManager::completedTaskCount() const {
+    if (!m_completedCountDirty) return m_cachedCompletedCount;
     int count = 0;
     for (const Task *task : m_tasks) {
         if (task->completed()) count++;
     }
+    m_cachedCompletedCount = count;
+    m_completedCountDirty = false;
     return count;
 }
 
@@ -445,7 +485,7 @@ void TaskManager::addTaskWithCategory(const QString &title, const QString &descr
     
     m_tasks.append(task);
     m_taskHash[task->id()] = task;
-    m_filterCacheValid = false;
+    invalidateFilter();
     
     emit tasksChanged();
     emit taskAdded(task);
@@ -459,6 +499,11 @@ void TaskManager::removeTask(const QString &taskId) {
     Task *task = m_taskHash.value(taskId, nullptr);
     if (!task) return;
 
+    // 性能优化：如果已完成的任务被删除，需要重算缓存
+    if (task->completed()) {
+        m_completedCountDirty = true;
+    }
+
     m_taskHash.remove(taskId);
     m_tasks.removeOne(task);
     emit taskRemoved(taskId);
@@ -466,7 +511,7 @@ void TaskManager::removeTask(const QString &taskId) {
     m_scheduledTasks.removeOne(task);
     emit scheduledTasksChanged();
 
-    m_filterCacheValid = false;
+    invalidateFilter();
     delete task;
     emit tasksChanged();
     updateCategoryTaskCounts();
@@ -496,7 +541,7 @@ void TaskManager::updateTaskFull(const QString &taskId, const QString &title, co
         task->setCategory(QStringLiteral(""));
     }
     
-    m_filterCacheValid = false;
+    invalidateFilter();
     emit tasksChanged();
     
     if (oldCategory != task->category()) {
@@ -515,26 +560,8 @@ Category* TaskManager::findCategory(const QString &categoryId) const {
 
 int TaskManager::taskCountFiltered() const {
     if (m_filterCacheValid) return m_cachedFilteredCount;
-    
-    int count = 0;
-    const QString lower = m_filterText.toLower();
-    for (const Task *task : m_tasks) {
-        // Category filter
-        if (!m_currentCategory.isEmpty() && task->category() != m_currentCategory) {
-            continue;
-        }
-        // Text filter
-        if (m_filterText.isEmpty() ||
-            task->title().contains(lower, Qt::CaseInsensitive) ||
-            task->description().contains(lower, Qt::CaseInsensitive)) {
-            count++;
-        }
-    }
-    
-    // Cache result
-    m_cachedFilteredCount = count;
-    m_filterCacheValid = true;
-    return count;
+    const_cast<TaskManager*>(this)->rebuildFilteredTasks();
+    return m_cachedFilteredCount;
 }
 
 QList<QObject*> TaskManager::tasksForCategory(const QString &categoryId) const {
@@ -547,11 +574,26 @@ QList<QObject*> TaskManager::tasksForCategory(const QString &categoryId) const {
     return result;
 }
 
+// 性能优化：C++ 端查询某天某小时的任务，避免 QML Repeater 遍历所有 scheduledTasks
+QList<Task*> TaskManager::tasksForHour(const QDateTime &day, int hour) const {
+    QList<Task*> result;
+    if (!day.isValid()) return result;
+    const QDate targetDate = day.date();
+    for (Task *task : m_scheduledTasks) {
+        if (!task->scheduled() || !task->startTime().isValid()) continue;
+        if (task->startTime().date() == targetDate && task->startTime().time().hour() == hour) {
+            result.append(task);
+        }
+    }
+    return result;
+}
+
 void TaskManager::toggleTaskCompletion(const QString &taskId) {
     Task *task = m_taskHash.value(taskId, nullptr);
     if (!task) return;
 
     task->setCompleted(!task->completed());
+    m_completedCountDirty = true;  // 性能优化：标记缓存失效
     scheduleSave();
     
     LOG_DEBUG("TaskManager", QStringLiteral("Task %1 completion toggled to %2")
@@ -749,6 +791,8 @@ void TaskManager::loadTasks() {
 
         rebuildScheduledList();
         updateCategoryTaskCounts();
+        m_completedCountDirty = true;
+        invalidateFilter();
 
         emit tasksChanged();
         emit scheduledTasksChanged();
@@ -869,8 +913,8 @@ bool TaskManager::importTasks(const QUrl &fileUrl) {
 
     rebuildScheduledList();
     updateCategoryTaskCounts();
-    
-    m_filterCacheValid = false;
+    m_completedCountDirty = true;
+    invalidateFilter();
     emit tasksChanged();
     emit scheduledTasksChanged();
     emit categoriesChanged();

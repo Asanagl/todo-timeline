@@ -15,7 +15,6 @@
 #include <QTimer>
 #include <QHash>
 #include <QRegularExpression>
-#include <QTimer>
 
 class Task : public QObject
 {
@@ -158,6 +157,8 @@ class TaskManager : public QObject
     Q_PROPERTY(QString currentCategory READ currentCategory WRITE setCurrentCategory NOTIFY currentCategoryChanged)
     Q_PROPERTY(int totalTaskCount READ totalTaskCount NOTIFY tasksChanged)
     Q_PROPERTY(int completedTaskCount READ completedTaskCount NOTIFY tasksChanged)
+    // 性能优化：C++ 端过滤后的任务列表，避免 QML delegate.visible 反模式
+    Q_PROPERTY(QQmlListProperty<Task> filteredTasks READ filteredTasks NOTIFY filteredTasksChanged)
 
 public:
     explicit TaskManager(QObject *parent = nullptr);
@@ -166,6 +167,8 @@ public:
     QQmlListProperty<Task> tasks();
     QQmlListProperty<Task> scheduledTasks();
     QQmlListProperty<Category> categories();
+    // 性能优化：C++ 端过滤
+    QQmlListProperty<Task> filteredTasks();
 
     QString filterText() const;
     void setFilterText(const QString &text);
@@ -199,6 +202,8 @@ public:
     Q_INVOKABLE Category* findCategory(const QString &categoryId) const;
     Q_INVOKABLE int taskCountFiltered() const;
     Q_INVOKABLE QList<QObject*> tasksForCategory(const QString &categoryId) const;
+    // 性能优化：查询某天某小时的任务，避免 QML 端 Repeater 遍历
+    Q_INVOKABLE QList<Task*> tasksForHour(const QDateTime &day, int hour) const;
 
     // Persistence
     Q_INVOKABLE void saveTasks();
@@ -212,6 +217,7 @@ signals:
     void categoriesChanged();
     void filterTextChanged();
     void currentCategoryChanged();
+    void filteredTasksChanged();
     void taskAdded(Task *task);
     void taskRemoved(const QString &taskId);
     void taskScheduled(Task *task);
@@ -228,9 +234,12 @@ private:
     void checkReminders();
     void saveCategories();
     void loadCategories();
+    void rebuildFilteredTasks();  // 性能优化：重建过滤后列表
+    void invalidateFilter();      // 性能优化：使过滤缓存失效
 
     QList<Task*> m_tasks;
     QList<Task*> m_scheduledTasks;
+    QList<Task*> m_filteredTasks;  // 性能优化：缓存过滤结果
     QList<Category*> m_categories;
     QHash<QString, Task*> m_taskHash;  // Fast lookup by ID
     QHash<QString, Category*> m_categoryHash;
@@ -242,6 +251,8 @@ private:
     bool m_loading;
     mutable int m_cachedFilteredCount;
     mutable bool m_filterCacheValid;
+    mutable int m_cachedCompletedCount;  // 性能优化：缓存已完成数量
+    mutable bool m_completedCountDirty;  // 性能优化：脏标记
 
     static constexpr int SAVE_DEBOUNCE_MS = 500;
     static constexpr int REMINDER_CHECK_MS = 60000; // Check every minute

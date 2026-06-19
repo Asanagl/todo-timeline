@@ -101,15 +101,28 @@ Dialog {
             ComboBox {
                 id: categoryComboBox
                 Layout.fillWidth: true
-                model: ["无分类"].concat(taskManager.categories ? 
-                    taskManager.categories.map(function(c) { return c.name }) : [])
+                textRole: "name"
+                valueRole: "id"
+
+                Component.onCompleted: {
+                    refreshCategoryModel()
+                }
+
+                function refreshCategoryModel() {
+                    var items = []
+                    items.push({ name: "无分类", id: "" })
+                    if (taskManager.categories) {
+                        for (var i = 0; i < taskManager.categories.length; i++) {
+                            var cat = taskManager.categories[i]
+                            items.push({ name: cat.name, id: cat.id })
+                        }
+                    }
+                    categoryComboBox.model = items
+                }
                 
                 onCurrentIndexChanged: {
-                    if (currentIndex === 0) {
-                        selectedCategoryId = ""
-                    } else if (taskManager.categories && currentIndex > 0) {
-                        selectedCategoryId = taskManager.categories[currentIndex - 1].id
-                    }
+                    var item = model[currentIndex]
+                    selectedCategoryId = item ? item.id : ""
                 }
 
                 background: Rectangle {

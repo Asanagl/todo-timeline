@@ -15,14 +15,6 @@ ApplicationWindow {
 
     property bool darkModeEnabled: false
 
-    // 动画配置
-    Behavior on width {
-        NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
-    }
-    Behavior on height {
-        NumberAnimation { duration: 300; easing.type: Easing.InOutQuad }
-    }
-
     // ============ 键盘快捷键 ============
 
     // Ctrl+N: 新建任务

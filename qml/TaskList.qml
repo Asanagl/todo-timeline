@@ -113,7 +113,8 @@ Rectangle {
             topMargin: 8
             bottomMargin: 16
 
-            model: taskManager.tasks
+            // 性能优化：使用 C++ 端过滤后的列表，避免 delegate.visible 反模式
+            model: taskManager.filteredTasks
 
             // 添加动画
             add: Transition {
@@ -132,21 +133,9 @@ Rectangle {
                 NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.InOutQuad }
             }
 
-            // 预计算一次 toLowerCase，避免每个 delegate 重复计算
-            property string filterLower: taskManager.filterText.toLowerCase()
-
             delegate: TaskItem {
                 width: taskListView.width - 32
                 task: modelData
-                visible: {
-                    if (taskListView.filterLower === "") return true
-                    return (modelData.title.toLowerCase().indexOf(taskListView.filterLower) >= 0) ||
-                           (modelData.description.toLowerCase().indexOf(taskListView.filterLower) >= 0)
-                }
-                height: visible ? 80 : 0
-                opacity: visible ? 1.0 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 200 } }
-                Behavior on height { NumberAnimation { duration: 200 } }
 
                 // 拖拽支持
                 Drag.active: dragArea.drag.active
@@ -161,9 +150,6 @@ Rectangle {
 
                     onPressed: {
                         taskListView.currentIndex = index
-                        parent.grabToImage(function(result) {
-                            parent.Drag.imageSource = result.url
-                        })
                     }
 
                     onReleased: {
@@ -177,11 +163,11 @@ Rectangle {
             // 空状态提示
             Label {
                 anchors.centerIn: parent
-                text: taskListView.filterLower !== "" ? "未找到匹配的任务" : "暂无任务\n点击 + 添加新任务"
+                text: taskManager.filterText !== "" ? "未找到匹配的任务" : "暂无任务\n点击 + 添加新任务"
                 horizontalAlignment: Text.AlignHCenter
                 color: "#9e9e9e"
                 font.pixelSize: 16
-                visible: taskManager.taskCountFiltered() === 0
+                visible: taskListView.count === 0
             }
         }
     }

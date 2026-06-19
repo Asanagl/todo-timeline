@@ -207,7 +207,7 @@ Dialog {
                             icon.height: 16
                             Material.foreground: Material.Red
                             onClicked: {
-                                deleteCategoryId = modelData.id
+                                deleteCategoryConfirm.deleteCategoryId = modelData.id
                                 deleteCategoryConfirm.open()
                             }
                         }
@@ -341,7 +341,7 @@ Dialog {
                     Material.background: Material.Red
                     Material.foreground: "white"
                     onClicked: {
-                        taskManager.removeCategory(deleteCategoryId)
+                        taskManager.removeCategory(deleteCategoryConfirm.deleteCategoryId)
                         deleteCategoryConfirm.close()
                     }
                 }
