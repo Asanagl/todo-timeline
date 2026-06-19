@@ -223,7 +223,10 @@ Rectangle {
 
                     // 已安排的任务显示 — 性能优化：使用 C++ 端 tasksForHour 避免遍历所有 scheduledTasks
                     Repeater {
-                        model: taskManager.tasksForHour(currentDate, hour)
+                    model: {
+                        taskManager.scheduledTasksVersion // 强制随时间轴安排变化刷新
+                        return taskManager.tasksForHour(currentDate, hour)
+                    }
 
                         Rectangle {
                             anchors.left: parent.left

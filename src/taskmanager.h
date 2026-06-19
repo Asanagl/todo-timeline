@@ -159,6 +159,8 @@ class TaskManager : public QObject
     Q_PROPERTY(int completedTaskCount READ completedTaskCount NOTIFY tasksChanged)
     // 性能优化：C++ 端过滤后的任务列表，避免 QML delegate.visible 反模式
     Q_PROPERTY(QQmlListProperty<Task> filteredTasks READ filteredTasks NOTIFY filteredTasksChanged)
+    // 时间轴强制刷新版本号，每次 scheduledTasks 变化时递增
+    Q_PROPERTY(int scheduledTasksVersion READ scheduledTasksVersion NOTIFY scheduledTasksChanged)
 
 public:
     explicit TaskManager(QObject *parent = nullptr);
@@ -178,10 +180,11 @@ public:
 
     int totalTaskCount() const;
     int completedTaskCount() const;
+    int scheduledTasksVersion() const { return m_scheduledTasksVersion; }
 
     // Task operations
-    Q_INVOKABLE void addTask(const QString &title, const QString &description);
-    Q_INVOKABLE void addTaskWithCategory(const QString &title, const QString &description, const QString &categoryId);
+    Q_INVOKABLE QString addTask(const QString &title, const QString &description);
+    Q_INVOKABLE QString addTaskWithCategory(const QString &title, const QString &description, const QString &categoryId);
     Q_INVOKABLE void removeTask(const QString &taskId);
     Q_INVOKABLE void updateTaskFull(const QString &taskId, const QString &title, const QString &description,
                                      int priority, const QString &color, const QString &categoryId);
@@ -253,6 +256,7 @@ private:
     mutable bool m_filterCacheValid;
     mutable int m_cachedCompletedCount;  // 性能优化：缓存已完成数量
     mutable bool m_completedCountDirty;  // 性能优化：脏标记
+    int m_scheduledTasksVersion = 0;  // 时间轴强制刷新版本号
 
     static constexpr int SAVE_DEBOUNCE_MS = 500;
     static constexpr int REMINDER_CHECK_MS = 60000; // Check every minute

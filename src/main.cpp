@@ -10,13 +10,13 @@
 
 int main(int argc, char *argv[])
 {
-    // Initialize logger first
-    Logger::instance()->info("App", QStringLiteral("Application starting"));
-
     QGuiApplication app(argc, argv);
     app.setOrganizationName("TodoApp");
     app.setApplicationName("Todo Timeline");
     app.setApplicationVersion("1.1.0");
+
+    // Initialize logger after QApplication setup
+    Logger::instance()->info("App", QStringLiteral("Application starting"));
 
     // Set style
     QQuickStyle::setStyle("Material");

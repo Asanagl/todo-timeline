@@ -181,12 +181,5 @@ Rectangle {
         }
     }
 
-    // 点击展开/收起
-    MouseArea {
-        anchors.fill: parent
-        anchors.leftMargin: 60
-        onClicked: {
-            isExpanded = !isExpanded
-        }
-    }
+    // 展开区域（点击任务项在 TaskList 委托中处理）
 }

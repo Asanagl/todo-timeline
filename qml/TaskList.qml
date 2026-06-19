@@ -147,15 +147,17 @@ Rectangle {
                     anchors.fill: parent
                     drag.target: parent
                     drag.axis: Drag.XAndYAxis
-
                     onPressed: {
                         taskListView.currentIndex = index
                     }
-
                     onReleased: {
                         parent.Drag.drop()
                         parent.x = 0
                         parent.y = 0
+                    }
+                    onClicked: {
+                        // 点击展开/折叠，不拖拽时触发
+                        isExpanded = !isExpanded
                     }
                 }
             }

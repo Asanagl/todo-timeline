@@ -466,17 +466,17 @@ void TaskManager::loadCategories() {
     }
 }
 
-void TaskManager::addTask(const QString &title, const QString &description) {
-    addTaskWithCategory(title, description, m_currentCategory);
+QString TaskManager::addTask(const QString &title, const QString &description) {
+    return addTaskWithCategory(title, description, m_currentCategory);
 }
 
-void TaskManager::addTaskWithCategory(const QString &title, const QString &description, const QString &categoryId) {
+QString TaskManager::addTaskWithCategory(const QString &title, const QString &description, const QString &categoryId) {
     if (m_tasks.size() >= MAX_TASKS) {
         LOG_WARNING("TaskManager", QStringLiteral("Maximum task count reached: %1").arg(MAX_TASKS));
-        return;
+        return QString();
     }
     const QString trimmedTitle = title.trimmed();
-    if (trimmedTitle.isEmpty()) return;
+    if (trimmedTitle.isEmpty()) return QString();
 
     Task *task = new Task(trimmedTitle, description, this);
     if (!categoryId.isEmpty() && m_categoryHash.contains(categoryId)) {
@@ -493,6 +493,7 @@ void TaskManager::addTaskWithCategory(const QString &title, const QString &descr
     scheduleSave();
     
     LOG_DEBUG("TaskManager", QStringLiteral("Added task: %1").arg(task->title()));
+    return task->id();
 }
 
 void TaskManager::removeTask(const QString &taskId) {
@@ -509,8 +510,8 @@ void TaskManager::removeTask(const QString &taskId) {
     emit taskRemoved(taskId);
 
     m_scheduledTasks.removeOne(task);
+    ++m_scheduledTasksVersion;
     emit scheduledTasksChanged();
-
     invalidateFilter();
     delete task;
     emit tasksChanged();
@@ -611,6 +612,7 @@ void TaskManager::scheduleTask(const QString &taskId, const QDateTime &startTime
 
     if (!m_scheduledTasks.contains(task)) {
         m_scheduledTasks.append(task);
+        ++m_scheduledTasksVersion;
         emit scheduledTasksChanged();
     }
 
@@ -632,6 +634,7 @@ void TaskManager::unscheduleTask(const QString &taskId) {
     task->setEndTime(QDateTime());
 
     if (m_scheduledTasks.removeOne(task)) {
+        ++m_scheduledTasksVersion;
         emit scheduledTasksChanged();
     }
 
@@ -798,6 +801,7 @@ void TaskManager::loadTasks() {
         invalidateFilter();
 
         emit tasksChanged();
+        ++m_scheduledTasksVersion;
         emit scheduledTasksChanged();
         
         LOG_INFO("TaskManager", QStringLiteral("Loaded %1 tasks").arg(m_tasks.size()));

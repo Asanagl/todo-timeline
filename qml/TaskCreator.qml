@@ -419,30 +419,27 @@ Dialog {
 
                 onClicked: {
                     // 创建任务
+                    var newTaskId = ""
                     if (selectedCategoryId !== "") {
-                        taskManager.addTaskWithCategory(titleField.text, descriptionField.text, selectedCategoryId)
+                        newTaskId = taskManager.addTaskWithCategory(titleField.text, descriptionField.text, selectedCategoryId)
                     } else {
-                        taskManager.addTask(titleField.text, descriptionField.text)
+                        newTaskId = taskManager.addTask(titleField.text, descriptionField.text)
                     }
 
                     // 如果安排了时间
-                    if (scheduleCheckBox.checked) {
+                    if (scheduleCheckBox.checked && newTaskId !== "") {
                         var startTime = new Date()
                         startTime.setHours(startHourTumbler.currentIndex, startMinuteTumbler.currentIndex, 0, 0)
                         var endTime = new Date()
                         endTime.setHours(endHourTumbler.currentIndex, endMinuteTumbler.currentIndex, 0, 0)
 
-                        var tasks = taskManager.tasks
-                        if (tasks.length > 0) {
-                            var newTask = tasks[tasks.length - 1]
-                            taskManager.scheduleTask(newTask.id, startTime, endTime)
+                        taskManager.scheduleTask(newTaskId, startTime, endTime)
 
-                            // 设置提醒
-                            if (reminderCheckBox.checked) {
-                                var reminderTime = new Date(startTime)
-                                reminderTime.setMinutes(reminderTime.getMinutes() - reminderAdvanceSpinBox.value)
-                                taskManager.setTaskReminder(newTask.id, reminderTime)
-                            }
+                        // 设置提醒
+                        if (reminderCheckBox.checked) {
+                            var reminderTime = new Date(startTime)
+                            reminderTime.setMinutes(reminderTime.getMinutes() - reminderAdvanceSpinBox.value)
+                            taskManager.setTaskReminder(newTaskId, reminderTime)
                         }
                     }
 
