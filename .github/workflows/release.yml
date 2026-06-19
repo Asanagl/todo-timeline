@@ -22,7 +22,7 @@ jobs:
     - name: Install Qt via aqtinstall
       run: |
         pip install aqtinstall
-        aqt install-qt windows desktop 6.7.2 win64_msvc2019_64 -O ${{ github.workspace }}/Qt -m qtshadertools
+        aqt install-qt windows desktop 6.7.2 win64_msvc2019_64 -O ${{ github.workspace }}/Qt
 
     - name: Set Qt environment
       shell: pwsh

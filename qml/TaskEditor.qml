@@ -16,6 +16,7 @@ Dialog {
     property string taskDescription: ""
     property int taskPriority: 0
     property string taskColor: "#4A90D9"
+    property string taskCategory: ""
 
     // 动画
     enter: Transition {
@@ -34,6 +35,7 @@ Dialog {
         taskDescription = task.description
         taskPriority = task.priority
         taskColor = task.color
+        taskCategory = task.category || ""
         titleField.text = task.title
         descriptionField.text = task.description
         prioritySelector.currentIndex = task.priority
@@ -236,7 +238,8 @@ Dialog {
                         titleField.text,
                         descriptionField.text,
                         prioritySelector.currentIndex,
-                        ["#4A90D9", "#4CAF50", "#FF9800", "#F44336", "#9C27B0", "#00BCD4"][colorSelector.currentIndex]
+                        ["#4A90D9", "#4CAF50", "#FF9800", "#F44336", "#9C27B0", "#00BCD4"][colorSelector.currentIndex],
+                        taskEditorDialog.taskCategory
                     )
                     taskEditorDialog.close()
                     notification.show("任务已更新: " + titleField.text)

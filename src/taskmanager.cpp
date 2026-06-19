@@ -594,6 +594,7 @@ void TaskManager::toggleTaskCompletion(const QString &taskId) {
 
     task->setCompleted(!task->completed());
     m_completedCountDirty = true;  // 性能优化：标记缓存失效
+    emit tasksChanged();
     scheduleSave();
     
     LOG_DEBUG("TaskManager", QStringLiteral("Task %1 completion toggled to %2")
@@ -705,9 +706,11 @@ void TaskManager::removeCategory(const QString &categoryId) {
 
     if (m_currentCategory == categoryId) {
         m_currentCategory = QStringLiteral("");
+        m_filterCacheValid = false;
         emit currentCategoryChanged();
     }
 
+    invalidateFilter();
     emit categoriesChanged();
     emit tasksChanged();
     saveCategories();
