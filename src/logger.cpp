@@ -46,7 +46,9 @@ void Logger::log(LogLevel level, const QString &category, const QString &message
 {
     if (level < m_minLevel) return;
 
-    QString formatted = formatMessage(level, category, message);
+    // 性能优化：只捕获一次时间戳
+    const QDateTime now = QDateTime::currentDateTime();
+    const QString formatted = formatMessage(level, category, message, now);
 
     // Output to console
     switch (level) {
@@ -66,7 +68,7 @@ void Logger::log(LogLevel level, const QString &category, const QString &message
 
     // Write to file
     if (m_fileEnabled && m_logStream) {
-        writeToFile(level, category, message);
+        writeToFile(level, category, message, now);
     }
 }
 
@@ -109,7 +111,7 @@ void Logger::setLogFileEnabled(bool enabled)
     }
 }
 
-void Logger::writeToFile(LogLevel level, const QString &category, const QString &message)
+void Logger::writeToFile(LogLevel level, const QString &category, const QString &message, const QDateTime &timestamp)
 {
     if (!m_logStream) return;
 
@@ -125,11 +127,11 @@ void Logger::writeToFile(LogLevel level, const QString &category, const QString 
         
         m_logFile->open(QIODevice::WriteOnly | QIODevice::Append);
         *m_logStream << QStringLiteral("=== Log rotated at ") 
-                     << QDateTime::currentDateTime().toString(Qt::ISODate) 
+                     << timestamp.toString(Qt::ISODate) 
                      << QStringLiteral(" ===\n");
     }
 
-    *m_logStream << formatMessage(level, category, message) << QStringLiteral("\n");
+    *m_logStream << formatMessage(level, category, message, timestamp) << QStringLiteral("\n");
     m_logStream->flush();
 }
 
@@ -144,10 +146,10 @@ QString Logger::levelToString(LogLevel level) const
     }
 }
 
-QString Logger::formatMessage(LogLevel level, const QString &category, const QString &message) const
+QString Logger::formatMessage(LogLevel level, const QString &category, const QString &message, const QDateTime &timestamp) const
 {
     return QStringLiteral("[%1] [%2] %3: %4")
-        .arg(QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")))
+        .arg(timestamp.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")))
         .arg(levelToString(level))
         .arg(category)
         .arg(message);

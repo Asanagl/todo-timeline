@@ -317,16 +317,15 @@ QQmlListProperty<Task> TaskManager::filteredTasks() {
 void TaskManager::rebuildFilteredTasks() {
     m_filteredTasks.clear();
     m_filteredTasks.reserve(m_tasks.size());
-    const QString lower = m_filterText.toLower();
     for (Task *task : m_tasks) {
         // 分类过滤
         if (!m_currentCategory.isEmpty() && task->category() != m_currentCategory) {
             continue;
         }
-        // 文本过滤
+        // 文本过滤：直接使用 CaseInsensitive，无需预 lower
         if (m_filterText.isEmpty() ||
-            task->title().contains(lower, Qt::CaseInsensitive) ||
-            task->description().contains(lower, Qt::CaseInsensitive)) {
+            task->title().contains(m_filterText, Qt::CaseInsensitive) ||
+            task->description().contains(m_filterText, Qt::CaseInsensitive)) {
             m_filteredTasks.append(task);
         }
     }
@@ -392,9 +391,12 @@ void TaskManager::rebuildScheduledList() {
             m_scheduledTasks.append(task);
         }
     }
+    m_tasksByHourCacheValid = false;  // 性能优化：使小时缓存失效
 }
 
 void TaskManager::updateCategoryTaskCounts() {
+    // 性能优化：增量更新替代全量重建
+    // 此函数仅用于初始化/导入场景，日常增删使用 updateCategoryTaskCount
     QHash<QString, int> counts;
     for (const Task *task : m_tasks) {
         QString cat = task->category();
@@ -407,7 +409,30 @@ void TaskManager::updateCategoryTaskCounts() {
     }
 }
 
+// 性能优化：增量更新单个分类的任务计数
+void TaskManager::updateCategoryTaskCount(const QString &categoryId, int delta) {
+    if (categoryId.isEmpty()) return;
+    Category *category = m_categoryHash.value(categoryId, nullptr);
+    if (category) {
+        category->setTaskCount(category->taskCount() + delta);
+    }
+}
+
+// 性能优化：扫描所有任务，更新是否有任何提醒
+void TaskManager::updateReminderFlag() {
+    for (const Task *task : m_tasks) {
+        if (task->hasReminder()) {
+            m_hasAnyReminders = true;
+            return;
+        }
+    }
+    m_hasAnyReminders = false;
+}
+
 void TaskManager::checkReminders() {
+    // 性能优化：快速跳过不必要的遍历
+    if (!m_hasAnyReminders) return;
+
     QDateTime now = QDateTime::currentDateTime();
     for (Task *task : m_tasks) {
         if (task->hasReminder() && task->reminderTime().isValid()) {
@@ -418,6 +443,8 @@ void TaskManager::checkReminders() {
                 LOG_INFO("Reminder", QStringLiteral("Reminder triggered for task: %1").arg(task->title()));
                 // Clear reminder after triggering to prevent repeated alerts
                 task->setHasReminder(false);
+                // 性能优化：更新全局提醒标记
+                updateReminderFlag();
             }
         }
     }
@@ -489,7 +516,7 @@ QString TaskManager::addTaskWithCategory(const QString &title, const QString &de
     
     emit tasksChanged();
     emit taskAdded(task);
-    updateCategoryTaskCounts();
+    updateCategoryTaskCount(categoryId, 1);  // 性能优化：增量更新
     scheduleSave();
     
     LOG_DEBUG("TaskManager", QStringLiteral("Added task: %1").arg(task->title()));
@@ -505,17 +532,19 @@ void TaskManager::removeTask(const QString &taskId) {
         m_completedCountDirty = true;
     }
 
+    const QString oldCategory = task->category();
     m_taskHash.remove(taskId);
     m_tasks.removeOne(task);
     emit taskRemoved(taskId);
 
     m_scheduledTasks.removeOne(task);
+    m_tasksByHourCacheValid = false;  // 性能优化：使小时缓存失效
     ++m_scheduledTasksVersion;
     emit scheduledTasksChanged();
     invalidateFilter();
     delete task;
     emit tasksChanged();
-    updateCategoryTaskCounts();
+    updateCategoryTaskCount(oldCategory, -1);  // 性能优化：增量更新
     scheduleSave();
     
     LOG_DEBUG("TaskManager", QStringLiteral("Removed task: %1").arg(taskId));
@@ -545,8 +574,10 @@ void TaskManager::updateTaskFull(const QString &taskId, const QString &title, co
     invalidateFilter();
     emit tasksChanged();
     
+    // 性能优化：增量更新分类计数
     if (oldCategory != task->category()) {
-        updateCategoryTaskCounts();
+        updateCategoryTaskCount(oldCategory, -1);
+        updateCategoryTaskCount(task->category(), 1);
     }
     scheduleSave();
 }
@@ -559,9 +590,9 @@ Category* TaskManager::findCategory(const QString &categoryId) const {
     return m_categoryHash.value(categoryId, nullptr);
 }
 
-int TaskManager::taskCountFiltered() const {
+int TaskManager::taskCountFiltered() {
     if (m_filterCacheValid) return m_cachedFilteredCount;
-    const_cast<TaskManager*>(this)->rebuildFilteredTasks();
+    rebuildFilteredTasks();
     return m_cachedFilteredCount;
 }
 
@@ -576,17 +607,32 @@ QList<QObject*> TaskManager::tasksForCategory(const QString &categoryId) const {
 }
 
 // 性能优化：C++ 端查询某天某小时的任务，避免 QML Repeater 遍历所有 scheduledTasks
-QList<Task*> TaskManager::tasksForHour(const QDateTime &day, int hour) const {
-    QList<Task*> result;
-    if (!day.isValid()) return result;
-    const QDate targetDate = day.date();
+QList<Task*> TaskManager::tasksForHour(const QDate &date, int hour) const {
+    if (!date.isValid() || hour < 0 || hour > 23) return {};
+    if (!m_tasksByHourCacheValid) {
+        rebuildTasksByHourCache();
+    }
+    auto it = m_tasksByHourCache.constFind(date);
+    if (it != m_tasksByHourCache.constEnd()) {
+        return (*it)[hour];
+    }
+    return {};
+}
+
+// 性能优化：单次遍历所有 scheduledTasks，按日期+小时分组缓存
+void TaskManager::rebuildTasksByHourCache() const {
+    m_tasksByHourCache.clear();
     for (Task *task : m_scheduledTasks) {
         if (!task->scheduled() || !task->startTime().isValid()) continue;
-        if (task->startTime().date() == targetDate && task->startTime().time().hour() == hour) {
-            result.append(task);
+        const QDate date = task->startTime().date();
+        const int hour = task->startTime().time().hour();
+        auto &vec = m_tasksByHourCache[date];
+        if (vec.isEmpty()) {
+            vec.resize(24);
         }
+        vec[hour].append(task);
     }
-    return result;
+    m_tasksByHourCacheValid = true;
 }
 
 void TaskManager::toggleTaskCompletion(const QString &taskId) {
@@ -612,6 +658,7 @@ void TaskManager::scheduleTask(const QString &taskId, const QDateTime &startTime
 
     if (!m_scheduledTasks.contains(task)) {
         m_scheduledTasks.append(task);
+        m_tasksByHourCacheValid = false;  // 性能优化：使小时缓存失效
         ++m_scheduledTasksVersion;
         emit scheduledTasksChanged();
     }
@@ -634,6 +681,7 @@ void TaskManager::unscheduleTask(const QString &taskId) {
     task->setEndTime(QDateTime());
 
     if (m_scheduledTasks.removeOne(task)) {
+        m_tasksByHourCacheValid = false;  // 性能优化：使小时缓存失效
         ++m_scheduledTasksVersion;
         emit scheduledTasksChanged();
     }
@@ -649,6 +697,7 @@ void TaskManager::moveTask(const QString &taskId, const QDateTime &newStartTime)
     const qint64 duration = task->startTime().secsTo(task->endTime());
     task->setStartTime(newStartTime);
     task->setEndTime(newStartTime.addSecs(duration));
+    m_tasksByHourCacheValid = false;  // 性能优化：移动后小时可能变化
     scheduleSave();
 }
 
@@ -658,6 +707,7 @@ void TaskManager::setTaskReminder(const QString &taskId, const QDateTime &remind
 
     task->setReminderTime(reminderTime);
     task->setHasReminder(true);
+    m_hasAnyReminders = true;  // 性能优化：标记有提醒
     scheduleSave();
     
     LOG_DEBUG("TaskManager", QStringLiteral("Set reminder for task %1 at %2")
@@ -670,6 +720,7 @@ void TaskManager::clearTaskReminder(const QString &taskId) {
 
     task->setHasReminder(false);
     task->setReminderTime(QDateTime());
+    updateReminderFlag();  // 性能优化：更新全局提醒标记
     scheduleSave();
 }
 
@@ -797,7 +848,9 @@ void TaskManager::loadTasks() {
 
         rebuildScheduledList();
         updateCategoryTaskCounts();
+        m_tasksByHourCacheValid = false;  // 性能优化：使小时缓存失效
         m_completedCountDirty = true;
+        updateReminderFlag();  // 性能优化：更新提醒标记
         invalidateFilter();
 
         emit tasksChanged();
@@ -920,7 +973,9 @@ bool TaskManager::importTasks(const QUrl &fileUrl) {
 
     rebuildScheduledList();
     updateCategoryTaskCounts();
+    m_tasksByHourCacheValid = false;  // 性能优化：使小时缓存失效
     m_completedCountDirty = true;
+    updateReminderFlag();  // 性能优化：更新提醒标记
     invalidateFilter();
     emit tasksChanged();
     emit scheduledTasksChanged();

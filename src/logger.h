@@ -36,9 +36,9 @@ private:
     explicit Logger(QObject *parent = nullptr);
     ~Logger() override;
 
-    void writeToFile(LogLevel level, const QString &category, const QString &message);
+    void writeToFile(LogLevel level, const QString &category, const QString &message, const QDateTime &timestamp);
     QString levelToString(LogLevel level) const;
-    QString formatMessage(LogLevel level, const QString &category, const QString &message) const;
+    QString formatMessage(LogLevel level, const QString &category, const QString &message, const QDateTime &timestamp) const;
 
     static Logger *m_instance;
     QFile *m_logFile;

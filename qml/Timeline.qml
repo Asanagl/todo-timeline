@@ -11,12 +11,14 @@ Rectangle {
     property date currentDate: new Date()
     // 预计算当前日期字符串，避免每个 delegate 重复格式化
     property string currentDateStr: Qt.formatDate(currentDate, "yyyyMMdd")
+    // 预计算今天日期字符串，避免每次绑定重复计算
+    readonly property string todayStr: Qt.formatDate(new Date(), "yyyyMMdd")
     // 每小时高度常量，避免硬编码散落各处
     readonly property int hourHeight: 80
 
     function getCurrentTimeY() {
         var now = new Date()
-        if (Qt.formatDate(now, "yyyyMMdd") === currentDateStr) {
+        if (Qt.formatDate(now, "yyyyMMdd") === todayStr) {
             return (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
         }
         return -100 // 隐藏
@@ -72,7 +74,7 @@ Rectangle {
                 Button {
                     text: "今天"
                     flat: true
-                    visible: Qt.formatDate(currentDate, "yyyyMMdd") !== Qt.formatDate(new Date(), "yyyyMMdd")
+                    visible: currentDateStr !== todayStr
                     onClicked: {
                         currentDate = new Date()
                         timelineModel.currentDate = currentDate
@@ -108,6 +110,7 @@ Rectangle {
                         (index % 2 === 0 ? "white" : "#fafafa"))
 
                     property int hour: index
+                    property bool isCurrentHour: currentDateStr === todayStr && new Date().getHours() === hour
                     // 缓存默认颜色，避免 onExited 重复计算
                     property color baseColor: isCurrentHour ? "#E3F2FD" : (Material.theme === Material.Dark ?
                         (index % 2 === 0 ? "#383838" : "#303030") :

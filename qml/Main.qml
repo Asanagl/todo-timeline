@@ -2,7 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Dialogs 1.3
+import QtQuick.Dialogs
 
 ApplicationWindow {
     id: root
@@ -192,11 +192,10 @@ ApplicationWindow {
     FileDialog {
         id: exportDialog
         title: "导出任务数据"
-        folder: shortcuts.desktop
+        fileMode: FileDialog.SaveFile
         nameFilters: ["JSON 文件 (*.json)", "所有文件 (*)"]
-        selectExisting: false
         onAccepted: {
-            taskManager.exportTasks(fileUrl)
+            taskManager.exportTasks(selectedFile)
         }
     }
 
@@ -204,11 +203,10 @@ ApplicationWindow {
     FileDialog {
         id: importDialog
         title: "导入任务数据"
-        folder: shortcuts.desktop
+        fileMode: FileDialog.OpenFile
         nameFilters: ["JSON 文件 (*.json)", "所有文件 (*)"]
-        selectExisting: true
         onAccepted: {
-            taskManager.importTasks(fileUrl)
+            taskManager.importTasks(selectedFile)
         }
     }
 

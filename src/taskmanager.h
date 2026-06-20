@@ -203,10 +203,10 @@ public:
     // Query operations
     Q_INVOKABLE Task* findTask(const QString &taskId) const;
     Q_INVOKABLE Category* findCategory(const QString &categoryId) const;
-    Q_INVOKABLE int taskCountFiltered() const;
+    Q_INVOKABLE int taskCountFiltered();
     Q_INVOKABLE QList<QObject*> tasksForCategory(const QString &categoryId) const;
     // 性能优化：查询某天某小时的任务，避免 QML 端 Repeater 遍历
-    Q_INVOKABLE QList<Task*> tasksForHour(const QDateTime &day, int hour) const;
+    Q_INVOKABLE QList<Task*> tasksForHour(const QDate &date, int hour) const;
 
     // Persistence
     Q_INVOKABLE void saveTasks();
@@ -239,6 +239,9 @@ private:
     void loadCategories();
     void rebuildFilteredTasks();  // 性能优化：重建过滤后列表
     void invalidateFilter();      // 性能优化：使过滤缓存失效
+    void rebuildTasksByHourCache() const;  // 性能优化：预构建按小时分组的缓存
+    void updateCategoryTaskCount(const QString &categoryId, int delta);  // 性能优化：增量更新分类计数
+    void updateReminderFlag();  // 性能优化：更新全局提醒标记
 
     QList<Task*> m_tasks;
     QList<Task*> m_scheduledTasks;
@@ -257,6 +260,10 @@ private:
     mutable int m_cachedCompletedCount;  // 性能优化：缓存已完成数量
     mutable bool m_completedCountDirty;  // 性能优化：脏标记
     int m_scheduledTasksVersion = 0;  // 时间轴强制刷新版本号
+    // 性能优化：按日期+小时预分组缓存，避免 24 次遍历
+    mutable QHash<QDate, QVector<QList<Task*>>> m_tasksByHourCache;
+    mutable bool m_tasksByHourCacheValid = false;
+    bool m_hasAnyReminders = false;  // 性能优化：快速跳过提醒检查
 
     static constexpr int SAVE_DEBOUNCE_MS = 500;
     static constexpr int REMINDER_CHECK_MS = 60000; // Check every minute
