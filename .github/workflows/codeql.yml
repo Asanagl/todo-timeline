@@ -38,7 +38,7 @@ jobs:
 
     - name: Install Qt
       run: |
-        pip install aqtinstall
+        pip install aqtinstall==3.2.0
         aqt install-qt linux desktop 6.7.2 gcc_64 -O ${{ github.workspace }}/Qt
         echo "Qt6_DIR=${{ github.workspace }}/Qt/6.7.2/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
         echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/Qt/6.7.2/gcc_64" >> $GITHUB_ENV
