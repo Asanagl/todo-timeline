@@ -24,10 +24,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
 
@@ -39,10 +39,10 @@ jobs:
     - name: Install Qt
       run: |
         pip install aqtinstall
-        aqt install-qt --base https://download.qt.io linux desktop 6.7.2 gcc_64 -O ${{ github.workspace }}/Qt
-        echo "Qt6_DIR=${{ github.workspace }}/Qt/6.7.2/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
-        echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/Qt/6.7.2/gcc_64" >> $GITHUB_ENV
-        echo "${{ github.workspace }}/Qt/6.7.2/gcc_64/bin" >> $GITHUB_PATH
+        aqt install-qt linux desktop 6.8.0 gcc_64 -O ${{ github.workspace }}/Qt
+        echo "Qt6_DIR=${{ github.workspace }}/Qt/6.8.0/gcc_64/lib/cmake/Qt6" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/Qt/6.8.0/gcc_64" >> $GITHUB_ENV
+        echo "${{ github.workspace }}/Qt/6.8.0/gcc_64/bin" >> $GITHUB_PATH
 
     - name: Install dependencies
       run: |
@@ -55,6 +55,6 @@ jobs:
         cmake --build build --config Release
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{ matrix.language }}"
