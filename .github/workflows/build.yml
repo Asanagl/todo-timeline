@@ -54,8 +54,8 @@ jobs:
 
     - name: Install Qt via aqtinstall
       run: |
-        pip install aqtinstall==3.2.0
-        aqt install-qt linux desktop 6.7.2 gcc_64 -O ${{ github.workspace }}/Qt
+        pip install aqtinstall
+        aqt install-qt --base https://download.qt.io linux desktop 6.7.2 gcc_64 -O ${{ github.workspace }}/Qt
 
     - name: Set Qt environment
       run: |
