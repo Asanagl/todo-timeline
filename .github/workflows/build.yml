@@ -59,7 +59,7 @@ jobs:
 
     - name: Set Qt environment
       run: |
-        QT_ROOT="${{ github.workspace }}/Qt/6.8.0/linux_gcc_64"
+        QT_ROOT="${{ github.workspace }}/Qt/6.8.0/gcc_64"
         echo "Qt6_DIR=$QT_ROOT/lib/cmake/Qt6" >> $GITHUB_ENV
         echo "CMAKE_PREFIX_PATH=$QT_ROOT" >> $GITHUB_ENV
         echo "$QT_ROOT/bin" >> $GITHUB_PATH
