@@ -55,13 +55,11 @@ jobs:
     - name: Install Qt via aqtinstall
       run: |
         pip install aqtinstall
-        aqt list-qt linux desktop || true
-        aqt list-qt linux desktop --arch 6.8.0 || true
-        aqt install-qt linux desktop 6.8.0 gcc_64 -O ${{ github.workspace }}/Qt
+        aqt install-qt linux desktop 6.8.0 linux_gcc_64 -O ${{ github.workspace }}/Qt
 
     - name: Set Qt environment
       run: |
-        QT_ROOT="${{ github.workspace }}/Qt/6.8.0/gcc_64"
+        QT_ROOT="${{ github.workspace }}/Qt/6.8.0/linux_gcc_64"
         echo "Qt6_DIR=$QT_ROOT/lib/cmake/Qt6" >> $GITHUB_ENV
         echo "CMAKE_PREFIX_PATH=$QT_ROOT" >> $GITHUB_ENV
         echo "$QT_ROOT/bin" >> $GITHUB_PATH
