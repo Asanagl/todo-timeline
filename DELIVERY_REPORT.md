@@ -109,13 +109,24 @@ Copy-Item -Path "C:\Users\Asanagi\todo__app\Qt\6.8.0\mingw_64\plugins\platforms"
 
 | 任务 | 结果 | 耗时 |
 |---|---|---|
-| build-windows | 成功 | 2m28s |
-| build-linux | 成功 | 1m11s |
-| build-android | 成功（编译通过） | 3m56s |
+| build-windows | 成功 | 1m32s |
+| build-linux | 成功 | 50s |
+| build-android | 成功（编译通过） | 3m21s |
 
 - 构建产物：`windows-build`、`linux-build` 两个 artifact 已上传。
 - Android 编译成功，但 artifact 上传步骤提示未找到 `build/android-build/outputs/**/*.apk`，不影响构建本身。
-- 运行详情：[https://github.com/Asanagl/todo-timeline/actions/runs/27897635851](https://github.com/Asanagl/todo-timeline/actions/runs/27897635851)
+- 运行详情：[https://github.com/Asanagl/todo-timeline/actions/runs/27897882482](https://github.com/Asanagl/todo-timeline/actions/runs/27897882482)
+
+### 4.5 构建产物下载与校验
+
+已从 GitHub Actions 下载最新 artifact 到本地，文件校验如下：
+
+| 平台 | 文件 | 大小 | SHA-256 |
+|---|---|---|---|
+| Windows x64 | `artifacts/windows-latest/TodoApp.exe` | 171,520 B | `FCEFEDCC26D2A5184B5F2188F89B1B16E7D0BD459F66D506C3E57A58A9B620B5` |
+| Linux x64 | `artifacts/linux-latest/TodoApp` | 287,760 B | `998E4F64D030EAA5910DE0A97D3E2DBA49B9E0C808CEB097429798CBB736B5CB` |
+
+> 注：artifact 下载命令为 `gh run download 27897882482 --name <windows-build|linux-build> --dir artifacts/<platform>-latest`。
 
 ## 5. 已知问题与后续建议
 
