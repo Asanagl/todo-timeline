@@ -154,4 +154,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: android-build
-        path: build/android-build/outputs/**/*.apk
+        path: build/android-build/*.apk
