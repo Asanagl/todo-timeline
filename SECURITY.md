@@ -2,10 +2,11 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
+| Version | Supported |
+| ------- | --------- |
+| 1.1.x   | :white_check_mark: |
 | 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+| < 1.0   | :x: |
 
 ## Reporting a Vulnerability
 
@@ -14,12 +15,13 @@ If you discover a security vulnerability in Todo Timeline, please report it resp
 ### How to Report
 
 1. **Do NOT** create a public GitHub issue for security vulnerabilities
-2. **Email** the maintainers directly at [security@example.com]
+2. **Use GitHub Security Advisories**: [https://github.com/Asanagl/todo-timeline/security/advisories/new](https://github.com/Asanagl/todo-timeline/security/advisories/new)
 3. **Include** the following information:
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact
    - Suggested fix (if any)
+   - Affected version(s)
 
 ### What to Expect
 
@@ -50,9 +52,8 @@ If you discover a security vulnerability in Todo Timeline, please report it resp
 1. **Follow** secure coding practices
 2. **Validate** all user inputs
 3. **Sanitize** data before storage
-4. **Use** parameterized queries
-5. **Encrypt** sensitive data
-6. **Audit** dependencies regularly
+4. **Encrypt** sensitive data if added in the future
+5. **Audit** dependencies regularly
 
 ## Known Security Considerations
 
@@ -61,6 +62,7 @@ If you discover a security vulnerability in Todo Timeline, please report it resp
 - Task data is stored locally in JSON format
 - No encryption is applied to local storage
 - Users should protect their device physically
+- Import files are validated for size (max 10MB) and JSON structure
 
 ### Network Communication
 
@@ -72,13 +74,13 @@ If you discover a security vulnerability in Todo Timeline, please report it resp
 
 - Qt 6.x framework
 - CMake build system
-- No other external dependencies
+- No other external runtime dependencies
 
 ## Security Updates
 
 Security updates will be released as:
 
-- **Patch versions** (1.0.x) for critical fixes
+- **Patch versions** (1.1.x) for critical fixes
 - **Minor versions** (1.x.0) for security improvements
 - **Major versions** (x.0.0) for breaking changes
 
@@ -93,10 +95,9 @@ Security updates will be released as:
 
 For security-related inquiries:
 
-- **Email**: [security@example.com]
-- **PGP Key**: [Available on request]
+- **GitHub Security Advisories**: [https://github.com/Asanagl/todo-timeline/security/advisories](https://github.com/Asanagl/todo-timeline/security/advisories)
 - **Response time**: 48 hours maximum
 
 ---
 
-Thank you for helping keep Todo Timeline secure! 🔒
+Thank you for helping keep Todo Timeline secure!
