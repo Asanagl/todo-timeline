@@ -103,6 +103,20 @@ Copy-Item -Path "C:\Users\Asanagi\todo__app\Qt\6.8.0\mingw_64\plugins\platforms"
 
 > 注：`windeployqt6 --dir` 在当前环境下未自动复制 `platforms` 目录，原因待查（可能与 MinGW 部署路径检测有关）。
 
+### 4.4 GitHub Actions 构建状态
+
+推送后 GitHub Actions `Build` 工作流已成功执行：
+
+| 任务 | 结果 | 耗时 |
+|---|---|---|
+| build-windows | 成功 | 2m28s |
+| build-linux | 成功 | 1m11s |
+| build-android | 成功（编译通过） | 3m56s |
+
+- 构建产物：`windows-build`、`linux-build` 两个 artifact 已上传。
+- Android 编译成功，但 artifact 上传步骤提示未找到 `build/android-build/outputs/**/*.apk`，不影响构建本身。
+- 运行详情：[https://github.com/Asanagl/todo-timeline/actions/runs/27897635851](https://github.com/Asanagl/todo-timeline/actions/runs/27897635851)
+
 ## 5. 已知问题与后续建议
 
 | 问题 | 影响 | 建议 |
