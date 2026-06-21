@@ -1,28 +1,27 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Controls.Material 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Layouts
+import "AppConstants.js" as C
 
 Dialog {
     id: deleteConfirmDialog
     title: "确认删除"
     modal: true
     anchors.centerIn: parent
-    width: 360
-    height: 220
+    width: C.dialogWidthLarge
 
     property string taskId: ""
     property string taskTitle: ""
 
-    // 动画
     enter: Transition {
-        NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 250 }
-        NumberAnimation { property: "scale"; from: 0.9; to: 1.0; duration: 250; easing.type: Easing.OutBack }
+        NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: C.animDurationEnter }
+        NumberAnimation { property: "scale"; from: 0.9; to: 1.0; duration: C.animDurationEnter; easing.type: Easing.OutBack }
     }
 
     exit: Transition {
-        NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 200 }
-        NumberAnimation { property: "scale"; from: 1.0; to: 0.9; duration: 200 }
+        NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: C.animDurationSlow }
+        NumberAnimation { property: "scale"; from: 1.0; to: 0.9; duration: C.animDurationSlow }
     }
 
     function confirmDelete(taskId, taskTitle) {
@@ -32,34 +31,33 @@ Dialog {
     }
 
     contentItem: ColumnLayout {
-        spacing: 20
+        spacing: C.spacingXXLarge
+        anchors.margins: C.paddingLarge
 
-        // 警告图标和文字
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 12
+            spacing: C.spacingLarge
 
-            // 警告图标
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                width: 48
-                height: 48
-                radius: 24
-                color: "#FFF3E0"
+                Layout.preferredWidth: C.heightXLarge
+                Layout.preferredHeight: C.heightXLarge
+                radius: C.heightXLarge / 2
+                color: C.colorWarningBg
 
                 Label {
                     anchors.centerIn: parent
                     text: "!"
                     font.pixelSize: 24
                     font.bold: true
-                    color: "#FF9800"
+                    color: C.colorWarning
                 }
             }
 
             Label {
                 Layout.fillWidth: true
                 text: "确定要删除任务吗？"
-                font.pixelSize: 16
+                font.pixelSize: C.fontSizeTitle
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
             }
@@ -67,8 +65,8 @@ Dialog {
             Label {
                 Layout.fillWidth: true
                 text: "\"" + deleteConfirmDialog.taskTitle + "\""
-                font.pixelSize: 14
-                color: "#757575"
+                font.pixelSize: C.fontSizeLarge
+                color: C.colorTextSecondary
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
             }
@@ -76,16 +74,15 @@ Dialog {
             Label {
                 Layout.fillWidth: true
                 text: "此操作无法撤销"
-                font.pixelSize: 12
-                color: "#F44336"
+                font.pixelSize: C.fontSizeSmall
+                color: C.colorDanger
                 horizontalAlignment: Text.AlignHCenter
             }
         }
 
-        // 按钮区域
         RowLayout {
             Layout.fillWidth: true
-            spacing: 12
+            spacing: C.spacingLarge
 
             Button {
                 text: "取消"
@@ -96,18 +93,16 @@ Dialog {
 
             Button {
                 text: "删除"
-                Material.background: "#F44336"
+                Material.background: C.colorDanger
                 Material.foreground: "white"
                 Layout.fillWidth: true
+                Layout.preferredHeight: C.heightLarge
 
                 onClicked: {
                     taskManager.removeTask(deleteConfirmDialog.taskId)
                     deleteConfirmDialog.close()
                     notification.show("任务已删除: " + deleteConfirmDialog.taskTitle)
                 }
-
-                scale: pressed ? 0.95 : 1.0
-                Behavior on scale { NumberAnimation { duration: 100 } }
             }
         }
     }

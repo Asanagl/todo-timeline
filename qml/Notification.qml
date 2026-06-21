@@ -1,19 +1,18 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Controls.Material 2.15
+import QtQuick
+import QtQuick.Controls
+import "AppConstants.js" as C
 
 Rectangle {
     id: notificationRoot
     width: notificationText.implicitWidth + 40
-    height: 40
-    radius: 20
+    height: C.heightLarge
+    radius: C.heightLarge / 2
     color: "#323232"
     opacity: 0
     scale: 0.8
 
     property alias text: notificationText.text
 
-    // 显示动画
     function show(message) {
         text = message
         showAnimation.start()
@@ -24,10 +23,9 @@ Rectangle {
         id: notificationText
         anchors.centerIn: parent
         color: "white"
-        font.pixelSize: 14
+        font.pixelSize: C.fontSizeLarge
     }
 
-    // 显示动画
     ParallelAnimation {
         id: showAnimation
 
@@ -36,7 +34,7 @@ Rectangle {
             property: "opacity"
             from: 0
             to: 1.0
-            duration: 300
+            duration: C.animDurationDialog
             easing.type: Easing.OutQuad
         }
 
@@ -45,7 +43,7 @@ Rectangle {
             property: "scale"
             from: 0.8
             to: 1.0
-            duration: 300
+            duration: C.animDurationDialog
             easing.type: Easing.OutBack
         }
 
@@ -54,12 +52,11 @@ Rectangle {
             property: "y"
             from: -20
             to: 0
-            duration: 300
+            duration: C.animDurationDialog
             easing.type: Easing.OutQuad
         }
     }
 
-    // 隐藏动画
     ParallelAnimation {
         id: hideAnimation
 
@@ -68,7 +65,7 @@ Rectangle {
             property: "opacity"
             from: 1.0
             to: 0
-            duration: 200
+            duration: C.animDurationSlow
         }
 
         NumberAnimation {
@@ -76,24 +73,18 @@ Rectangle {
             property: "scale"
             from: 1.0
             to: 0.8
-            duration: 200
+            duration: C.animDurationSlow
         }
     }
 
-    // 自动隐藏定时器
     Timer {
         id: hideTimer
         interval: 3000
-        onTriggered: {
-            hideAnimation.start()
-        }
+        onTriggered: hideAnimation.start()
     }
 
-    // 点击关闭
     MouseArea {
         anchors.fill: parent
-        onClicked: {
-            hideAnimation.start()
-        }
+        onClicked: hideAnimation.start()
     }
 }

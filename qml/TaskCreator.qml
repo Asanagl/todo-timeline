@@ -1,55 +1,87 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Controls.Material 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Layouts
+import "AppConstants.js" as C
 
 Dialog {
     id: taskCreatorDialog
     title: "创建新任务"
     modal: true
     anchors.centerIn: parent
-    width: 420
-    height: 580
+    width: C.dialogWidthTask
 
     property string selectedCategoryId: ""
 
-    // 动画
     enter: Transition {
-        NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 300 }
-        NumberAnimation { property: "scale"; from: 0.8; to: 1.0; duration: 300; easing.type: Easing.OutBack }
+        NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: C.animDurationDialog }
+        NumberAnimation { property: "scale"; from: 0.8; to: 1.0; duration: C.animDurationDialog; easing.type: Easing.OutBack }
     }
 
     exit: Transition {
-        NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 200 }
-        NumberAnimation { property: "scale"; from: 1.0; to: 0.8; duration: 200 }
+        NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: C.animDurationSlow }
+        NumberAnimation { property: "scale"; from: 1.0; to: 0.8; duration: C.animDurationSlow }
+    }
+
+    component FormLabel: Label {
+        font.bold: true
+        font.pixelSize: C.fontSizeLarge
+        color: Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark
+        bottomPadding: C.spacingSmall
+    }
+
+    component FormTextField: TextField {
+        Layout.fillWidth: true
+        Layout.preferredHeight: C.heightLarge
+        font.pixelSize: C.fontSizeXLarge
+        leftPadding: C.paddingLarge
+        rightPadding: C.paddingLarge
+        topPadding: 0
+        bottomPadding: 0
+        verticalAlignment: Text.AlignVCenter
+
+        background: Rectangle {
+            radius: C.radiusMedium
+            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
+            border.color: parent.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+            border.width: parent.activeFocus ? 2 : 1
+        }
+    }
+
+    component FormTextArea: TextArea {
+        Layout.fillWidth: true
+        wrapMode: TextArea.Wrap
+        font.pixelSize: C.fontSizeLarge
+        leftPadding: C.paddingLarge
+        rightPadding: C.paddingLarge
+        topPadding: C.paddingMedium
+        bottomPadding: C.paddingMedium
+
+        background: Rectangle {
+            radius: C.radiusMedium
+            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
+            border.color: parent.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+            border.width: parent.activeFocus ? 2 : 1
+        }
     }
 
     contentItem: ColumnLayout {
-        spacing: 16
+        spacing: C.spacingXXLarge
+        anchors.margins: C.paddingLarge
 
         // 标题输入
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: C.spacingMedium
 
-            Label {
-                text: "任务标题 *"
-                font.bold: true
-                font.pixelSize: 13
-            }
+            FormLabel { text: "任务标题 *" }
 
-            TextField {
+            FormTextField {
                 id: titleField
-                Layout.fillWidth: true
                 placeholderText: "输入任务标题..."
-                font.pixelSize: 15
                 maximumLength: 200
-
-                background: Rectangle {
-                    radius: 8
-                    border.color: titleField.text.length > 0 ? "#4CAF50" : (titleField.activeFocus ? "#2196F3" : "#e0e0e0")
-                    border.width: titleField.activeFocus ? 2 : 1
-                    Behavior on border.color { ColorAnimation { duration: 200 } }
+                onAccepted: {
+                    if (createButton.enabled) createButton.clicked()
                 }
             }
         }
@@ -57,32 +89,21 @@ Dialog {
         // 描述输入
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: C.spacingMedium
 
-            Label {
-                text: "任务描述"
-                font.bold: true
-                font.pixelSize: 13
-            }
+            FormLabel { text: "任务描述" }
 
             Flickable {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 80
+                contentWidth: width
                 contentHeight: descriptionField.implicitHeight
                 clip: true
 
-                TextArea {
+                FormTextArea {
                     id: descriptionField
                     width: parent.width
                     placeholderText: "输入任务描述..."
-                    wrapMode: TextArea.Wrap
-                    font.pixelSize: 13
-
-                    background: Rectangle {
-                        radius: 8
-                        border.color: descriptionField.activeFocus ? "#2196F3" : "#e0e0e0"
-                        border.width: descriptionField.activeFocus ? 2 : 1
-                    }
                 }
             }
         }
@@ -90,27 +111,21 @@ Dialog {
         // 分类选择
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: C.spacingMedium
 
-            Label {
-                text: "分类"
-                font.bold: true
-                font.pixelSize: 13
-            }
+            FormLabel { text: "分类" }
 
             ComboBox {
                 id: categoryComboBox
                 Layout.fillWidth: true
+                Layout.preferredHeight: C.heightLarge
                 textRole: "name"
                 valueRole: "id"
 
-                Component.onCompleted: {
-                    refreshCategoryModel()
-                }
+                Component.onCompleted: refreshCategoryModel()
 
                 function refreshCategoryModel() {
-                    var items = []
-                    items.push({ name: "无分类", id: "" })
+                    var items = [{ name: "无分类", id: "" }]
                     if (taskManager.categories) {
                         for (var i = 0; i < taskManager.categories.length; i++) {
                             var cat = taskManager.categories[i]
@@ -119,16 +134,17 @@ Dialog {
                     }
                     categoryComboBox.model = items
                 }
-                
+
                 onCurrentIndexChanged: {
                     var item = model[currentIndex]
-                    selectedCategoryId = item ? item.id : ""
+                    taskCreatorDialog.selectedCategoryId = item ? item.id : ""
                 }
 
                 background: Rectangle {
-                    radius: 8
-                    border.color: categoryComboBox.activeFocus ? "#2196F3" : "#e0e0e0"
-                    border.width: categoryComboBox.activeFocus ? 2 : 1
+                    radius: C.radiusMedium
+                    color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
+                    border.color: parent.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+                    border.width: parent.activeFocus ? 2 : 1
                 }
             }
         }
@@ -136,49 +152,20 @@ Dialog {
         // 优先级选择
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: C.spacingMedium
 
-            Label {
-                text: "优先级"
-                font.bold: true
-                font.pixelSize: 13
-            }
+            FormLabel { text: "优先级" }
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: C.spacingLarge
 
                 Repeater {
-                    model: [
-                        { text: "低", color: "#4CAF50", value: 0 },
-                        { text: "中", color: "#FF9800", value: 1 },
-                        { text: "高", color: "#F44336", value: 2 }
-                    ]
-
-                    delegate: Rectangle {
-                        width: 80
-                        height: 36
-                        radius: 8
-                        color: prioritySelector.currentIndex === index ? modelData.color : (Material.theme === Material.Dark ? "#424242" : "white")
-                        border.color: modelData.color
-                        border.width: 2
-
-                        Label {
-                            anchors.centerIn: parent
-                            text: modelData.text
-                            color: prioritySelector.currentIndex === index ? "white" : modelData.color
-                            font.bold: true
-                            font.pixelSize: 13
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: prioritySelector.currentIndex = index
-                        }
-
-                        scale: prioritySelector.currentIndex === index ? 1.05 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 150 } }
+                    model: C.priorities
+                    delegate: PriorityButton {
+                        btnColor: modelData.color
+                        btnText: modelData.text
+                        selector: prioritySelector
                     }
                 }
 
@@ -189,17 +176,13 @@ Dialog {
         // 时间设置（可选）
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: C.spacingMedium
 
-            Label {
-                text: "安排时间（可选）"
-                font.bold: true
-                font.pixelSize: 13
-            }
+            FormLabel { text: "安排时间（可选）" }
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: C.spacingLarge
 
                 CheckBox {
                     id: scheduleCheckBox
@@ -209,33 +192,39 @@ Dialog {
                 Item { Layout.fillWidth: true }
             }
 
-            // 时间选择器
             ColumnLayout {
+                Layout.fillWidth: true
                 visible: scheduleCheckBox.checked
-                spacing: 12
+                spacing: C.spacingLarge
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 12
+                    spacing: C.spacingLarge
 
                     Label {
                         text: "开始时间:"
                         Layout.preferredWidth: 80
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
                     Tumbler {
                         id: startHourTumbler
                         Layout.preferredWidth: 60
+                        Layout.preferredHeight: 60
                         model: 24
                         currentIndex: new Date().getHours()
                         visibleItemCount: 3
                     }
 
-                    Label { text: ":" }
+                    Label {
+                        text: ":"
+                        Layout.alignment: Qt.AlignVCenter
+                    }
 
                     Tumbler {
                         id: startMinuteTumbler
                         Layout.preferredWidth: 60
+                        Layout.preferredHeight: 60
                         model: 60
                         currentIndex: 0
                         visibleItemCount: 3
@@ -244,26 +233,32 @@ Dialog {
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 12
+                    spacing: C.spacingLarge
 
                     Label {
                         text: "结束时间:"
                         Layout.preferredWidth: 80
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
                     Tumbler {
                         id: endHourTumbler
                         Layout.preferredWidth: 60
+                        Layout.preferredHeight: 60
                         model: 24
                         currentIndex: (new Date().getHours() + 1) % 24
                         visibleItemCount: 3
                     }
 
-                    Label { text: ":" }
+                    Label {
+                        text: ":"
+                        Layout.alignment: Qt.AlignVCenter
+                    }
 
                     Tumbler {
                         id: endMinuteTumbler
                         Layout.preferredWidth: 60
+                        Layout.preferredHeight: 60
                         model: 60
                         currentIndex: 0
                         visibleItemCount: 3
@@ -275,17 +270,13 @@ Dialog {
         // 提醒设置
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: C.spacingMedium
 
-            Label {
-                text: "提醒设置（可选）"
-                font.bold: true
-                font.pixelSize: 13
-            }
+            FormLabel { text: "提醒设置（可选）" }
 
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: C.spacingLarge
 
                 CheckBox {
                     id: reminderCheckBox
@@ -298,38 +289,53 @@ Dialog {
             RowLayout {
                 visible: reminderCheckBox.checked
                 Layout.fillWidth: true
-                spacing: 12
+                spacing: C.spacingMedium
 
                 Label {
                     text: "提醒时间:"
-                    Layout.preferredWidth: 80
+                    Layout.preferredWidth: 72
+                    Layout.alignment: Qt.AlignVCenter
                 }
 
                 SpinBox {
                     id: reminderHourSpinBox
+                    Layout.fillWidth: true
                     from: 0
                     to: 23
                     value: new Date().getHours()
                     editable: true
                 }
 
-                Label { text: ":" }
+                Label {
+                    text: ":"
+                    Layout.alignment: Qt.AlignVCenter
+                }
 
                 SpinBox {
                     id: reminderMinuteSpinBox
+                    Layout.fillWidth: true
                     from: 0
                     to: 59
                     value: 0
                     editable: true
                 }
+            }
+
+            RowLayout {
+                visible: reminderCheckBox.checked
+                Layout.fillWidth: true
+                spacing: C.spacingMedium
 
                 Label {
                     text: "提前"
+                    Layout.preferredWidth: 72
+                    Layout.alignment: Qt.AlignVCenter
                     color: Material.theme === Material.Dark ? "#aaa" : "#666"
                 }
 
                 SpinBox {
                     id: reminderAdvanceSpinBox
+                    Layout.fillWidth: true
                     from: 0
                     to: 120
                     value: 15
@@ -339,6 +345,7 @@ Dialog {
 
                 Label {
                     text: "分钟"
+                    Layout.alignment: Qt.AlignVCenter
                     color: Material.theme === Material.Dark ? "#aaa" : "#666"
                 }
             }
@@ -347,46 +354,19 @@ Dialog {
         // 颜色选择
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 6
+            spacing: C.spacingMedium
 
-            Label {
-                text: "任务颜色"
-                font.bold: true
-                font.pixelSize: 13
-            }
+            FormLabel { text: "任务颜色" }
 
             Flow {
                 Layout.fillWidth: true
-                spacing: 8
+                spacing: C.spacingMedium
 
                 Repeater {
-                    model: ["#4A90D9", "#4CAF50", "#FF9800", "#F44336", "#9C27B0", "#00BCD4"]
-
-                    delegate: Rectangle {
-                        width: 30
-                        height: 30
-                        radius: 15
-                        color: modelData
-                        border.color: colorSelector.currentIndex === index ? "white" : "transparent"
-                        border.width: 2
-
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: 14
-                            height: 14
-                            radius: 7
-                            color: "white"
-                            visible: colorSelector.currentIndex === index
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: colorSelector.currentIndex = index
-                        }
-
-                        scale: colorSelector.currentIndex === index ? 1.2 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 150 } }
+                    model: C.taskColors
+                    delegate: ColorCircle {
+                        circleColor: modelData
+                        selector: colorSelector
                     }
                 }
 
@@ -397,8 +377,8 @@ Dialog {
         // 按钮区域
         RowLayout {
             Layout.fillWidth: true
-            spacing: 12
-            Layout.topMargin: 8
+            spacing: C.spacingLarge
+            Layout.topMargin: C.spacingLarge
 
             Button {
                 text: "取消"
@@ -406,27 +386,25 @@ Dialog {
                 Layout.fillWidth: true
                 onClicked: {
                     taskCreatorDialog.close()
-                    resetForm()
+                    taskCreatorDialog.resetForm()
                 }
             }
 
             Button {
+                id: createButton
                 text: "创建任务"
-                Material.background: Material.accent
+                Material.background: C.colorPrimary
                 Material.foreground: "white"
                 Layout.fillWidth: true
+                Layout.preferredHeight: C.heightLarge
                 enabled: titleField.text.trim().length > 0
+                highlighted: true
 
                 onClicked: {
-                    // 创建任务
-                    var newTaskId = ""
-                    if (selectedCategoryId !== "") {
-                        newTaskId = taskManager.addTaskWithCategory(titleField.text, descriptionField.text, selectedCategoryId)
-                    } else {
-                        newTaskId = taskManager.addTask(titleField.text, descriptionField.text)
-                    }
+                    var newTaskId = taskCreatorDialog.selectedCategoryId !== ""
+                        ? taskManager.addTaskWithCategory(titleField.text, descriptionField.text, taskCreatorDialog.selectedCategoryId)
+                        : taskManager.addTask(titleField.text, descriptionField.text)
 
-                    // 如果安排了时间
                     if (scheduleCheckBox.checked && newTaskId !== "") {
                         var startTime = new Date()
                         startTime.setHours(startHourTumbler.currentIndex, startMinuteTumbler.currentIndex, 0, 0)
@@ -435,7 +413,6 @@ Dialog {
 
                         taskManager.scheduleTask(newTaskId, startTime, endTime)
 
-                        // 设置提醒
                         if (reminderCheckBox.checked) {
                             var reminderTime = new Date(startTime)
                             reminderTime.setMinutes(reminderTime.getMinutes() - reminderAdvanceSpinBox.value)
@@ -444,21 +421,18 @@ Dialog {
                     }
 
                     taskCreatorDialog.close()
-                    resetForm()
+                    taskCreatorDialog.resetForm()
                 }
-
-                scale: pressed ? 0.95 : 1.0
-                Behavior on scale { NumberAnimation { duration: 100 } }
             }
         }
     }
 
-    // 重置表单
     function resetForm() {
         titleField.text = ""
         descriptionField.text = ""
         prioritySelector.currentIndex = 0
         colorSelector.currentIndex = 0
+        categoryComboBox.refreshCategoryModel()
         categoryComboBox.currentIndex = 0
         selectedCategoryId = ""
         scheduleCheckBox.checked = false
@@ -472,7 +446,6 @@ Dialog {
         reminderAdvanceSpinBox.value = 15
     }
 
-    // 打开对话框时重置
     onOpened: {
         resetForm()
         titleField.forceActiveFocus()

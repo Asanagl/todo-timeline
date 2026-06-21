@@ -1,35 +1,33 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Controls.Material 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Layouts
 import QtQuick.Dialogs
+import "AppConstants.js" as C
 
 ApplicationWindow {
     id: root
     visible: true
-    width: 1200
-    height: 800
+    width: 1280
+    height: 840
     title: "Todo Timeline"
     Material.theme: darkModeEnabled ? Material.Dark : Material.Light
-    Material.accent: Material.Blue
+    Material.primary: C.colorPrimary
+    Material.accent: C.colorPrimary
 
     property bool darkModeEnabled: false
 
     // ============ 键盘快捷键 ============
-
-    // Ctrl+N: 新建任务
     Shortcut {
         sequence: "Ctrl+N"
         onActivated: taskCreator.open()
     }
 
-    // Ctrl+F: 聚焦搜索框
     Shortcut {
         sequence: "Ctrl+F"
         onActivated: taskList.focusSearchField()
     }
 
-    // Ctrl+S: 保存数据
     Shortcut {
         sequence: "Ctrl+S"
         onActivated: {
@@ -38,19 +36,16 @@ ApplicationWindow {
         }
     }
 
-    // Ctrl+E: 导出数据
     Shortcut {
         sequence: "Ctrl+E"
         onActivated: exportDialog.open()
     }
 
-    // Ctrl+I: 导入数据
     Shortcut {
         sequence: "Ctrl+I"
         onActivated: importDialog.open()
     }
 
-    // Ctrl+D: 切换深色模式
     Shortcut {
         sequence: "Ctrl+D"
         onActivated: {
@@ -59,7 +54,6 @@ ApplicationWindow {
         }
     }
 
-    // Esc: 关闭对话框
     Shortcut {
         sequence: "Escape"
         onActivated: {
@@ -70,23 +64,22 @@ ApplicationWindow {
     }
 
     // ============ 主布局 ============
-
     SplitView {
         anchors.fill: parent
         orientation: Qt.Horizontal
 
-        // 左侧任务列表
         TaskList {
             id: taskList
             SplitView.preferredWidth: 400
             SplitView.minimumWidth: 300
+            taskEditorDialog: taskEditor
+            deleteConfirmDialog: deleteConfirm
 
             function focusSearchField() {
                 searchField.forceActiveFocus()
             }
         }
 
-        // 右侧时间轴
         Timeline {
             id: timeline
             SplitView.fillWidth: true
@@ -94,14 +87,13 @@ ApplicationWindow {
     }
 
     // ============ 底部工具栏 ============
-
     footer: ToolBar {
-        Material.background: Material.primary
+        Material.background: C.colorPrimary
 
         RowLayout {
             anchors.fill: parent
-            anchors.leftMargin: 16
-            anchors.rightMargin: 16
+            anchors.leftMargin: C.paddingLarge
+            anchors.rightMargin: C.paddingLarge
 
             ToolButton {
                 text: "今天"
@@ -135,20 +127,20 @@ ApplicationWindow {
 
             Label {
                 text: Qt.formatDate(new Date(), "yyyy年MM月dd日")
-                font.pixelSize: 14
+                font.pixelSize: C.fontSizeLarge
                 color: "white"
+                font.bold: true
             }
 
             Label {
                 text: taskManager.totalTaskCount + " 任务"
-                font.pixelSize: 12
-                color: "#ccc"
+                font.pixelSize: C.fontSizeSmall
+                color: "#e5e7eb"
                 visible: taskManager.totalTaskCount > 0
             }
 
             Item { Layout.fillWidth: true }
 
-            // 深色模式切换
             ToolButton {
                 text: darkModeEnabled ? "浅色" : "深色"
                 onClicked: {
@@ -169,67 +161,55 @@ ApplicationWindow {
     }
 
     // ============ 对话框 ============
-
-    // 任务创建对话框
     TaskCreator {
         id: taskCreator
         anchors.centerIn: parent
     }
 
-    // 任务编辑对话框
     TaskEditor {
         id: taskEditor
         anchors.centerIn: parent
     }
 
-    // 删除确认对话框
     DeleteConfirmDialog {
         id: deleteConfirm
         anchors.centerIn: parent
     }
 
-    // 导出对话框
     FileDialog {
         id: exportDialog
         title: "导出任务数据"
         fileMode: FileDialog.SaveFile
         nameFilters: ["JSON 文件 (*.json)", "所有文件 (*)"]
-        onAccepted: {
-            taskManager.exportTasks(selectedFile)
-        }
+        onAccepted: taskManager.exportTasks(selectedFile)
     }
 
-    // 导入对话框
     FileDialog {
         id: importDialog
         title: "导入任务数据"
         fileMode: FileDialog.OpenFile
         nameFilters: ["JSON 文件 (*.json)", "所有文件 (*)"]
-        onAccepted: {
-            taskManager.importTasks(selectedFile)
-        }
+        onAccepted: taskManager.importTasks(selectedFile)
     }
 
-    // 快捷键帮助对话框
     Dialog {
         id: shortcutsDialog
         title: "键盘快捷键"
         modal: true
         anchors.centerIn: parent
-        width: 380
-        height: 420
+        width: C.dialogWidthXLarge
 
         enter: Transition {
-            NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 250 }
-            NumberAnimation { property: "scale"; from: 0.9; to: 1.0; duration: 250; easing.type: Easing.OutBack }
+            NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: C.animDurationEnter }
+            NumberAnimation { property: "scale"; from: 0.9; to: 1.0; duration: C.animDurationEnter; easing.type: Easing.OutBack }
         }
 
         exit: Transition {
-            NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 200 }
+            NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: C.animDurationSlow }
         }
 
         contentItem: ColumnLayout {
-            spacing: 12
+            spacing: C.spacingLarge
 
             Repeater {
                 model: [
@@ -245,29 +225,29 @@ ApplicationWindow {
 
                 delegate: RowLayout {
                     Layout.fillWidth: true
-                    spacing: 16
+                    spacing: C.paddingLarge
 
                     Rectangle {
-                        width: keyLabel.implicitWidth + 16
-                        height: 28
-                        radius: 4
-                        color: root.darkModeEnabled ? "#424242" : "#f0f0f0"
-                        border.color: root.darkModeEnabled ? "#616161" : "#ccc"
+                        Layout.preferredWidth: keyLabel.implicitWidth + 16
+                        Layout.preferredHeight: C.heightSmall
+                        radius: C.radiusSmall
+                        color: root.darkModeEnabled ? C.colorSurfaceDark : "#f3f4f6"
+                        border.color: root.darkModeEnabled ? C.colorBorderDark : C.colorBorderLight
                         border.width: 1
 
                         Label {
                             id: keyLabel
                             anchors.centerIn: parent
                             text: modelData.key
-                            font.pixelSize: 12
+                            font.pixelSize: C.fontSizeSmall
                             font.bold: true
-                            font.family: "Consolas"
+                            font.family: "JetBrains Mono"
                         }
                     }
 
                     Label {
                         text: modelData.desc
-                        font.pixelSize: 14
+                        font.pixelSize: C.fontSizeLarge
                         Layout.fillWidth: true
                     }
                 }
@@ -283,7 +263,6 @@ ApplicationWindow {
     }
 
     // ============ 连接信号 ============
-
     Connections {
         target: taskManager
 
@@ -309,7 +288,6 @@ ApplicationWindow {
     }
 
     // ============ 通知组件 ============
-
     Notification {
         id: notification
         anchors.bottom: parent.bottom
@@ -317,23 +295,20 @@ ApplicationWindow {
         anchors.horizontalCenter: parent.horizontalCenter
     }
 
-    // 提醒通知组件（特殊样式）
     Notification {
         id: reminderNotification
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 80
         anchors.horizontalCenter: parent.horizontalCenter
-        color: "#F44336"  // 红色背景表示提醒
+        color: C.colorDanger
     }
 
-    // 分类管理对话框
     CategoryDialog {
         id: categoryDialog
         anchors.centerIn: parent
     }
 
     // ============ 启动时滚动到当前时间 ============
-
     Component.onCompleted: {
         Qt.callLater(timeline.scrollToCurrentTime)
     }

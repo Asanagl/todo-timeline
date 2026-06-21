@@ -9,7 +9,13 @@ Logger::Logger(QObject *parent)
     , m_minLevel(Info)
     , m_fileEnabled(true)
 {
-    QString logPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    // 支持通过环境变量覆盖日志目录，便于测试和沙箱环境运行
+    QString logPath;
+    if (qEnvironmentVariableIsSet("TODO_APP_DATA_DIR")) {
+        logPath = QString::fromUtf8(qgetenv("TODO_APP_DATA_DIR"));
+    } else {
+        logPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    }
     QDir dir(logPath);
     if (!dir.exists()) {
         dir.mkpath(QStringLiteral("."));

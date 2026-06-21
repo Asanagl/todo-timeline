@@ -1,27 +1,25 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Controls.Material 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Layouts
+import "AppConstants.js" as C
 
 Rectangle {
     id: timelineRoot
-    color: Material.theme === Material.Dark ? "#303030" : "#fafafa"
+    color: Material.theme === Material.Dark ? C.colorBgDark : C.colorBgLight
 
-    // 当前显示的日期
     property date currentDate: new Date()
-    // 预计算当前日期字符串，避免每个 delegate 重复格式化
-    property string currentDateStr: Qt.formatDate(currentDate, "yyyyMMdd")
-    // 预计算今天日期字符串，避免每次绑定重复计算
+    readonly property string currentDateStr: Qt.formatDate(currentDate, "yyyyMMdd")
     readonly property string todayStr: Qt.formatDate(new Date(), "yyyyMMdd")
-    // 每小时高度常量，避免硬编码散落各处
     readonly property int hourHeight: 80
+    property int currentHour: new Date().getHours()
 
     function getCurrentTimeY() {
         var now = new Date()
         if (Qt.formatDate(now, "yyyyMMdd") === todayStr) {
             return (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
         }
-        return -100 // 隐藏
+        return -100
     }
 
     ColumnLayout {
@@ -31,54 +29,42 @@ Rectangle {
         // 日期导航栏
         Rectangle {
             Layout.fillWidth: true
-            height: 60
-            color: Material.theme === Material.Dark ? "#424242" : "white"
-            border.color: Material.theme === Material.Dark ? "#616161" : "#e0e0e0"
+            Layout.preferredHeight: C.heightXLarge + 16
+            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
+            border.color: Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight
             border.width: 1
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 16
-                anchors.rightMargin: 16
+                anchors.leftMargin: C.paddingLarge
+                anchors.rightMargin: C.paddingLarge
 
-                // 前一天按钮
                 RoundButton {
                     icon.source: "qrc:/icons/chevron_left.svg"
                     flat: true
-                    onClicked: {
-                        currentDate = new Date(currentDate.getTime() - 86400000)
-                        timelineModel.currentDate = currentDate
-                    }
+                    onClicked: timelineRoot.shiftDate(-1)
                 }
 
-                // 日期显示
                 Label {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
-                    text: Qt.formatDate(currentDate, "yyyy年MM月dd日 dddd")
-                    font.pixelSize: 18
+                    text: Qt.formatDate(timelineRoot.currentDate, "yyyy年MM月dd日 dddd")
+                    font.pixelSize: C.fontSizeHeader
                     font.bold: true
+                    color: Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark
                 }
 
-                // 后一天按钮
                 RoundButton {
                     icon.source: "qrc:/icons/chevron_right.svg"
                     flat: true
-                    onClicked: {
-                        currentDate = new Date(currentDate.getTime() + 86400000)
-                        timelineModel.currentDate = currentDate
-                    }
+                    onClicked: timelineRoot.shiftDate(1)
                 }
 
-                // 今天按钮
                 Button {
                     text: "今天"
                     flat: true
-                    visible: currentDateStr !== todayStr
-                    onClicked: {
-                        currentDate = new Date()
-                        timelineModel.currentDate = currentDate
-                    }
+                    visible: timelineRoot.currentDateStr !== timelineRoot.todayStr
+                    onClicked: timelineRoot.setDate(new Date())
                 }
             }
         }
@@ -95,7 +81,6 @@ Rectangle {
                 model: timelineModel
                 spacing: 0
 
-                // 当前时间指示器
                 header: Item {
                     width: timelineListView.width
                     height: 1
@@ -105,62 +90,58 @@ Rectangle {
                     id: hourDelegate
                     width: timelineListView.width
                     height: hourHeight
-                    color: isCurrentHour ? "#E3F2FD" : (Material.theme === Material.Dark ?
-                        (index % 2 === 0 ? "#383838" : "#303030") :
-                        (index % 2 === 0 ? "white" : "#fafafa"))
+                    color: hourDelegate.isCurrentHour ? C.colorPrimaryBg : (Material.theme === Material.Dark ?
+                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceDark : "#1a2233") :
+                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceLight : "#f3f4f6"))
 
+                    required property int index
+                    required property string timeString
                     property int hour: index
-                    property bool isCurrentHour: currentDateStr === todayStr && new Date().getHours() === hour
-                    // 缓存默认颜色，避免 onExited 重复计算
-                    property color baseColor: isCurrentHour ? "#E3F2FD" : (Material.theme === Material.Dark ?
-                        (index % 2 === 0 ? "#383838" : "#303030") :
-                        (index % 2 === 0 ? "white" : "#fafafa"))
+                    property bool isCurrentHour: timelineRoot.currentDateStr === timelineRoot.todayStr && timelineRoot.currentHour === hour
+                    property color baseColor: hourDelegate.isCurrentHour ? C.colorPrimaryBg : (Material.theme === Material.Dark ?
+                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceDark : "#1a2233") :
+                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceLight : "#f3f4f6"))
 
-                    // 时间标签
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 16
-                        anchors.rightMargin: 16
-                        spacing: 16
+                        anchors.leftMargin: C.paddingLarge
+                        anchors.rightMargin: C.paddingLarge
+                        spacing: C.paddingLarge
 
-                        // 时间文字
                         Label {
-                            text: timeString
-                            font.pixelSize: 14
-                            font.bold: isCurrentHour
-                            color: isCurrentHour ? "#1976D2" : "#757575"
+                            text: hourDelegate.timeString
+                            font.pixelSize: C.fontSizeLarge
+                            font.bold: hourDelegate.isCurrentHour
+                            color: hourDelegate.isCurrentHour ? C.colorPrimaryDark : C.colorTextSecondary
                             Layout.preferredWidth: 60
                         }
 
-                        // 分隔线
                         Rectangle {
                             Layout.fillWidth: true
-                            height: 1
-                            color: isCurrentHour ? "#1976D2" : "#e0e0e0"
+                            Layout.preferredHeight: 1
+                            color: hourDelegate.isCurrentHour ? C.colorPrimary : C.colorBorderLight
                         }
                     }
 
-                    // 当前时间指示器
                     Rectangle {
-                        visible: isCurrentHour
+                        id: currentHourIndicator
+                        visible: hourDelegate.isCurrentHour
                         anchors.left: parent.left
                         anchors.leftMargin: 86
                         anchors.verticalCenter: parent.verticalCenter
                         width: 12
                         height: 12
                         radius: 6
-                        color: "#1976D2"
+                        color: C.colorPrimary
 
-                        // 脉冲动画 — 性能优化：只在可见时运行
                         SequentialAnimation on scale {
                             loops: Animation.Infinite
-                            running: isCurrentHour && visible
+                            running: hourDelegate.isCurrentHour && currentHourIndicator.visible
                             NumberAnimation { from: 1.0; to: 1.5; duration: 1000; easing.type: Easing.InOutQuad }
                             NumberAnimation { from: 1.5; to: 1.0; duration: 1000; easing.type: Easing.InOutQuad }
                         }
                     }
 
-                    // 拖拽目标区域
                     DropArea {
                         id: dropArea
                         anchors.fill: parent
@@ -169,11 +150,14 @@ Rectangle {
                         property bool isHovered: false
 
                         onDropped: function(drop) {
-                            if (drop.source.task && drop.source.task.id) {
-                                var startTime = new Date(currentDate)
-                                startTime.setHours(hour, 0, 0, 0)
-                                var endTime = new Date(startTime.getTime() + 3600000) // 默认1小时
-                                taskManager.scheduleTask(drop.source.task.id, startTime, endTime)
+                            // qmllint disable missing-property
+                            var draggedTask = drop.source.task
+                            // qmllint enable missing-property
+                            if (draggedTask && draggedTask.id) {
+                                var startTime = new Date(timelineRoot.currentDate)
+                                startTime.setHours(hourDelegate.hour, 0, 0, 0)
+                                var endTime = new Date(startTime.getTime() + 3600000)
+                                taskManager.scheduleTask(draggedTask.id, startTime, endTime)
                                 notification.show("任务已安排到 " + Qt.formatTime(startTime, "HH:mm"))
                             }
                             isHovered = false
@@ -181,7 +165,7 @@ Rectangle {
 
                         onEntered: {
                             isHovered = true
-                            hourDelegate.color = "#BBDEFB"
+                            hourDelegate.color = C.colorPrimaryBg
                             dropIndicator.visible = true
                         }
 
@@ -192,30 +176,28 @@ Rectangle {
                         }
                     }
 
-                    // 拖拽放置指示器
                     Rectangle {
                         id: dropIndicator
                         visible: false
                         anchors.left: parent.left
                         anchors.leftMargin: 100
                         anchors.right: parent.right
-                        anchors.rightMargin: 16
+                        anchors.rightMargin: C.paddingLarge
                         anchors.verticalCenter: parent.verticalCenter
                         height: 24
-                        radius: 6
+                        radius: C.radiusSmall
                         color: Qt.rgba(33, 150, 243, 0.2)
-                        border.color: "#2196F3"
+                        border.color: C.colorPrimary
                         border.width: 2
 
                         Label {
                             anchors.centerIn: parent
-                            text: "放置到 " + timeString
-                            font.pixelSize: 12
-                            color: "#1976D2"
+                            text: "放置到 " + hourDelegate.timeString
+                            font.pixelSize: C.fontSizeSmall
+                            color: C.colorPrimaryDark
                             font.bold: true
                         }
 
-                        // 闪烁动画
                         SequentialAnimation on opacity {
                             loops: Animation.Infinite
                             running: dropIndicator.visible
@@ -224,31 +206,33 @@ Rectangle {
                         }
                     }
 
-                    // 已安排的任务显示 — 性能优化：使用 C++ 端 tasksForHour 避免遍历所有 scheduledTasks
                     Repeater {
-                    model: {
-                        taskManager.scheduledTasksVersion // 强制随时间轴安排变化刷新
-                        return taskManager.tasksForHour(currentDate, hour)
-                    }
+                        model: {
+                            taskManager.scheduledTasksVersion
+                            return taskManager.tasksForHour(timelineRoot.currentDate, hourDelegate.hour)
+                        }
 
                         Rectangle {
+                            required property int index
+                            required property var modelData
+
                             anchors.left: parent.left
                             anchors.leftMargin: 100
                             anchors.right: parent.right
-                            anchors.rightMargin: 16
+                            anchors.rightMargin: C.paddingLarge
                             anchors.top: parent.top
                             anchors.topMargin: 4 + index * 24
                             height: 20
-                            radius: 4
-                            color: modelData.color || "#4A90D9"
+                            radius: C.radiusSmall
+                            color: modelData.color || C.colorPrimary
                             opacity: 0.8
 
                             Label {
                                 anchors.fill: parent
-                                anchors.leftMargin: 8
+                                anchors.leftMargin: C.spacingMedium
                                 text: modelData.title
                                 color: "white"
-                                font.pixelSize: 12
+                                font.pixelSize: C.fontSizeSmall
                                 verticalAlignment: Text.AlignVCenter
                                 elide: Text.ElideRight
                             }
@@ -268,24 +252,23 @@ Rectangle {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: "#F44336"
+                        color: C.colorDanger
                     }
 
-                    // 时间标签
                     Rectangle {
                         anchors.left: parent.left
                         anchors.leftMargin: 70
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 50
-                        height: 20
-                        radius: 4
-                        color: "#F44336"
+                        width: 52
+                        height: 22
+                        radius: C.radiusSmall
+                        color: C.colorDanger
 
                         Label {
                             anchors.centerIn: parent
                             text: Qt.formatTime(new Date(), "HH:mm")
                             color: "white"
-                            font.pixelSize: 10
+                            font.pixelSize: C.fontSizeSmall
                         }
                     }
                 }
@@ -293,30 +276,37 @@ Rectangle {
         }
     }
 
-    // 添加任务到时间轴
+    function shiftDate(days) {
+        var d = new Date(currentDate.getTime() + days * 86400000)
+        setDate(d)
+    }
+
+    function setDate(date) {
+        currentDate = date
+        timelineModel.currentDate = date
+    }
+
     function addTaskToTimeline(task) {
         timelineListView.forceLayout()
     }
 
-    // 滚动到当前时间
     function scrollToCurrentTime() {
         var now = new Date()
         var y = (now.getHours() * hourHeight) + (now.getMinutes() / 60 * hourHeight)
         timelineListView.contentY = y - timelineListView.height / 2
     }
 
-    // 初始化
     Component.onCompleted: {
         timelineModel.currentDate = currentDate
         Qt.callLater(scrollToCurrentTime)
     }
 
-    // 定时器更新当前时间线
     Timer {
         interval: 60000
         running: true
         repeat: true
         onTriggered: {
+            currentHour = new Date().getHours()
             currentTimeLine.y = getCurrentTimeY()
         }
     }

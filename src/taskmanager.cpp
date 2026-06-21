@@ -262,7 +262,12 @@ TaskManager::TaskManager(QObject *parent)
     , m_cachedCompletedCount(0)
     , m_completedCountDirty(true)
 {
-    m_savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    // 支持通过环境变量覆盖数据目录，便于测试和沙箱环境运行
+    if (qEnvironmentVariableIsSet("TODO_APP_DATA_DIR")) {
+        m_savePath = QString::fromUtf8(qgetenv("TODO_APP_DATA_DIR"));
+    } else {
+        m_savePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    }
     QDir dir(m_savePath);
     if (!dir.exists()) {
         dir.mkpath(QStringLiteral("."));
@@ -697,7 +702,11 @@ void TaskManager::moveTask(const QString &taskId, const QDateTime &newStartTime)
     const qint64 duration = task->startTime().secsTo(task->endTime());
     task->setStartTime(newStartTime);
     task->setEndTime(newStartTime.addSecs(duration));
+
     m_tasksByHourCacheValid = false;  // 性能优化：移动后小时可能变化
+    ++m_scheduledTasksVersion;
+    emit scheduledTasksChanged();
+    emit taskScheduled(task);
     scheduleSave();
 }
 

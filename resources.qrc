@@ -10,6 +10,10 @@
         <file>qml/DeleteConfirmDialog.qml</file>
         <file>qml/Notification.qml</file>
         <file>qml/CategoryDialog.qml</file>
+        <file>qml/AppConstants.js</file>
+        <file>qml/PriorityButton.qml</file>
+        <file>qml/ColorCircle.qml</file>
+        <file>qml/ColorCircleSmall.qml</file>
         <file>icons/add.svg</file>
         <file>icons/close.svg</file>
         <file>icons/search.svg</file>

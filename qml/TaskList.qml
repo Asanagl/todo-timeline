@@ -1,14 +1,17 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Controls.Material 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Layouts
+import "AppConstants.js" as C
 
 Rectangle {
     id: taskListRoot
-    color: Material.theme === Material.Dark ? "#303030" : "#f5f5f5"
+    color: Material.theme === Material.Dark ? C.colorBgDark : C.colorBgLight
 
     property alias listView: taskListView
     property alias searchField: searchField
+    property var taskEditorDialog: null
+    property var deleteConfirmDialog: null
 
     ColumnLayout {
         anchors.fill: parent
@@ -17,38 +20,29 @@ Rectangle {
         // 标题栏
         Rectangle {
             Layout.fillWidth: true
-            height: 60
+            Layout.preferredHeight: C.heightXLarge + 16
             color: Material.primary
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 16
-                anchors.rightMargin: 16
+                anchors.leftMargin: C.paddingLarge
+                anchors.rightMargin: C.paddingLarge
 
                 Label {
                     text: "任务列表"
-                    font.pixelSize: 20
+                    font.pixelSize: C.fontSizeDisplay
                     font.bold: true
                     color: "white"
                 }
 
                 Item { Layout.fillWidth: true }
 
-                // 添加任务按钮
                 RoundButton {
                     id: addButton
                     icon.source: "qrc:/icons/add.svg"
-                    Material.background: Material.accent
-                    Material.foreground: "white"
-                    onClicked: {
-                        taskCreator.open()
-                    }
-
-                    // 悬停动画
-                    scale: hovered ? 1.1 : 1.0
-                    Behavior on scale {
-                        NumberAnimation { duration: 150 }
-                    }
+                    Material.background: "white"
+                    Material.foreground: Material.primary
+                    onClicked: taskCreator.open()
                 }
             }
         }
@@ -56,47 +50,51 @@ Rectangle {
         // 搜索框
         Rectangle {
             Layout.fillWidth: true
-            height: 50
-            color: Material.theme === Material.Dark ? "#424242" : "white"
-            border.color: Material.theme === Material.Dark ? "#616161" : "#e0e0e0"
-            border.width: 1
+            Layout.margins: C.paddingLarge
+            Layout.preferredHeight: C.heightXLarge
+            radius: C.radiusLarge
+            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
+            border.color: searchField.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+            border.width: searchField.activeFocus ? 2 : 1
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 16
-                anchors.rightMargin: 16
+                anchors.leftMargin: C.paddingLarge
+                anchors.rightMargin: C.paddingLarge
+                spacing: C.spacingMedium
 
                 Image {
                     source: "qrc:/icons/search.svg"
                     sourceSize: Qt.size(20, 20)
-                    opacity: 0.5
+                    opacity: 0.45
                 }
 
                 TextField {
                     id: searchField
                     Layout.fillWidth: true
+                    Layout.preferredHeight: C.heightLarge
                     placeholderText: "搜索任务..."
                     background: Item {}
-                    font.pixelSize: 14
+                    font.pixelSize: C.fontSizeLarge
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
+                    verticalAlignment: Text.AlignVCenter
 
-                    onTextChanged: {
-                        taskManager.filterText = text
-                    }
+                    onTextChanged: taskManager.filterText = text
+                }
 
-                    // 清除按钮
-                    RoundButton {
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: searchField.text.length > 0
-                        icon.source: "qrc:/icons/close.svg"
-                        icon.width: 16
-                        icon.height: 16
-                        flat: true
-                        onClicked: searchField.text = ""
-
-                        scale: hovered ? 1.2 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 100 } }
-                    }
+                RoundButton {
+                    visible: searchField.text.length > 0
+                    icon.source: "qrc:/icons/close.svg"
+                    icon.width: 18
+                    icon.height: 18
+                    flat: true
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                    Layout.alignment: Qt.AlignVCenter
+                    onClicked: searchField.text = ""
                 }
             }
         }
@@ -107,37 +105,34 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            spacing: 8
-            leftMargin: 16
-            rightMargin: 16
-            topMargin: 8
-            bottomMargin: 16
+            spacing: C.spacingMedium
+            leftMargin: C.paddingLarge
+            rightMargin: C.paddingLarge
+            topMargin: C.spacingSmall
+            bottomMargin: C.paddingLarge
 
-            // 性能优化：使用 C++ 端过滤后的列表，避免 delegate.visible 反模式
             model: taskManager.filteredTasks
 
-            // 添加动画
             add: Transition {
                 NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
                 NumberAnimation { property: "scale"; from: 0.8; to: 1.0; duration: 400; easing.type: Easing.OutBack }
             }
 
-            // 移除动画
             remove: Transition {
                 NumberAnimation { property: "opacity"; from: 1.0; to: 0; duration: 300 }
                 NumberAnimation { property: "scale"; from: 1.0; to: 0.8; duration: 300 }
             }
 
-            // 移动动画
             displaced: Transition {
                 NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.InOutQuad }
             }
 
             delegate: TaskItem {
-                width: taskListView.width - 32
+                width: taskListView.width - taskListView.leftMargin - taskListView.rightMargin
                 task: modelData
+                taskEditorDialog: taskListRoot.taskEditorDialog
+                deleteConfirmDialog: taskListRoot.deleteConfirmDialog
 
-                // 拖拽支持
                 Drag.active: dragArea.drag.active
                 Drag.hotSpot.x: width / 2
                 Drag.hotSpot.y: height / 2
@@ -145,39 +140,32 @@ Rectangle {
                 MouseArea {
                     id: dragArea
                     anchors.fill: parent
+                    z: -1
                     drag.target: parent
                     drag.axis: Drag.XAndYAxis
-                    onPressed: {
-                        taskListView.currentIndex = index
-                    }
+                    onPressed: taskListView.currentIndex = index
                     onReleased: {
                         parent.Drag.drop()
                         parent.x = 0
                         parent.y = 0
                     }
-                    onClicked: {
-                        // 点击展开/折叠，不拖拽时触发
-                        isExpanded = !isExpanded
-                    }
+                    onClicked: parent.isExpanded = !parent.isExpanded
                 }
             }
 
-            // 空状态提示
             Label {
                 anchors.centerIn: parent
                 text: taskManager.filterText !== "" ? "未找到匹配的任务" : "暂无任务\n点击 + 添加新任务"
                 horizontalAlignment: Text.AlignHCenter
-                color: "#9e9e9e"
-                font.pixelSize: 16
+                color: C.colorTextMuted
+                font.pixelSize: C.fontSizeTitle
                 visible: taskListView.count === 0
             }
         }
     }
 
-    // 连接信号
     Connections {
         target: taskManager
-
         function onTaskAdded(task) {
             taskListView.positionViewAtEnd()
         }

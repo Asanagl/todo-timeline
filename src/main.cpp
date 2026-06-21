@@ -2,7 +2,9 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QStandardPaths>
 #include <QIcon>
+#include <QFont>
 
 #include "taskmanager.h"
 #include "timelinemodel.h"
@@ -10,10 +12,23 @@
 
 int main(int argc, char *argv[])
 {
+    // 在沙箱/测试环境中通过环境变量覆盖数据目录，并启用 Qt 测试模式以避免写入系统缓存路径
+    if (qEnvironmentVariableIsSet("TODO_APP_DATA_DIR")) {
+        QStandardPaths::setTestModeEnabled(true);
+    }
+
     QGuiApplication app(argc, argv);
     app.setOrganizationName("TodoApp");
     app.setApplicationName("Todo Timeline");
     app.setApplicationVersion("1.1.0");
+
+    // 设置全局字体：优先 MiSans，回退 JetBrains Mono / Microsoft YaHei / Segoe UI
+    QFont defaultFont;
+    defaultFont.setFamilies({"MiSans", "JetBrains Mono", "Microsoft YaHei", "Segoe UI"});
+    defaultFont.setPointSize(10);
+    defaultFont.setStyleHint(QFont::SansSerif);
+    defaultFont.setStyleStrategy(QFont::PreferAntialias);
+    app.setFont(defaultFont);
 
     // Initialize logger after QApplication setup
     Logger::instance()->info("App", QStringLiteral("Application starting"));
@@ -42,6 +57,13 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
         }
     }, Qt::QueuedConnection);
+
+    QObject::connect(&engine, &QQmlApplicationEngine::warnings,
+                     &app, [](const QList<QQmlError> &warnings) {
+        for (const auto &warning : warnings) {
+            Logger::instance()->error("QML", warning.toString());
+        }
+    });
 
     engine.load(url);
 

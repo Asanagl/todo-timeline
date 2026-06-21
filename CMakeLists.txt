@@ -46,8 +46,8 @@ set(RESOURCES
     resources.qrc
 )
 
-# 创建可执行文件
-qt_add_executable(${PROJECT_NAME}
+# 创建可执行文件（WIN32 去掉控制台窗口）
+qt_add_executable(${PROJECT_NAME} WIN32
     ${SOURCES}
     ${HEADERS}
     ${RESOURCES}
@@ -68,6 +68,7 @@ if(ANDROID)
 endif()
 
 # 安装配置
+include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
