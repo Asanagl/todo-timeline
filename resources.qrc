@@ -14,6 +14,8 @@
         <file>qml/PriorityButton.qml</file>
         <file>qml/ColorCircle.qml</file>
         <file>qml/ColorCircleSmall.qml</file>
+        <file>qml/AcrylicPanel.qml</file>
+        <file>qml/ThemeSettingsDialog.qml</file>
         <file>icons/add.svg</file>
         <file>icons/close.svg</file>
         <file>icons/search.svg</file>

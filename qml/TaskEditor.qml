@@ -11,11 +11,24 @@ Dialog {
     anchors.centerIn: parent
     width: C.dialogWidthTask
 
+    // 亚克力半透明背景
+    background: Rectangle {
+        color: Qt.rgba(
+            themeManager.surfaceColor.r,
+            themeManager.surfaceColor.g,
+            themeManager.surfaceColor.b,
+            themeManager.acrylicEnabled ? Math.max(0.85, themeManager.acrylicOpacity) : 1.0
+        )
+        border.color: themeManager.borderColor
+        border.width: 1
+        radius: C.radiusLarge
+    }
+
     property string taskId: ""
     property string taskTitle: ""
     property string taskDescription: ""
     property int taskPriority: 0
-    property string taskColor: C.colorPrimary
+    property string taskColor: themeManager.primaryColor
     property string taskCategory: ""
     property bool taskScheduled: false
     property date taskStartTime: new Date()
@@ -36,7 +49,7 @@ Dialog {
     component FormLabel: Label {
         font.bold: true
         font.pixelSize: C.fontSizeLarge
-        color: Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark
+        color: themeManager.textColor
         bottomPadding: C.spacingSmall
     }
 
@@ -52,8 +65,8 @@ Dialog {
 
         background: Rectangle {
             radius: C.radiusMedium
-            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
-            border.color: parent.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+            color: themeManager.surfaceColor
+            border.color: parent.activeFocus ? themeManager.primaryColor : themeManager.borderColor
             border.width: parent.activeFocus ? 2 : 1
         }
     }
@@ -69,8 +82,8 @@ Dialog {
 
         background: Rectangle {
             radius: C.radiusMedium
-            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
-            border.color: parent.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+            color: themeManager.surfaceColor
+            border.color: parent.activeFocus ? themeManager.primaryColor : themeManager.borderColor
             border.width: parent.activeFocus ? 2 : 1
         }
     }
@@ -219,8 +232,8 @@ Dialog {
 
                 background: Rectangle {
                     radius: C.radiusMedium
-                    color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
-                    border.color: parent.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+                    color: themeManager.surfaceColor
+                    border.color: parent.activeFocus ? themeManager.primaryColor : themeManager.borderColor
                     border.width: parent.activeFocus ? 2 : 1
                 }
             }
@@ -433,7 +446,7 @@ Dialog {
             Button {
                 id: saveButton
                 text: "保存更改"
-                Material.background: C.colorPrimary
+                Material.background: themeManager.primaryColor
                 Material.foreground: "white"
                 Layout.fillWidth: true
                 Layout.preferredHeight: C.heightLarge

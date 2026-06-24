@@ -19,7 +19,7 @@ Rectangle {
     radius: C.radiusMedium
     color: (root.selector && root.selector.currentIndex === root.btnIndex)
         ? root.btnColor
-        : (Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight)
+        : themeManager.surfaceColor
     border.color: root.btnColor
     border.width: 2
 

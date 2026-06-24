@@ -6,7 +6,7 @@ import "AppConstants.js" as C
 
 Rectangle {
     id: timelineRoot
-    color: Material.theme === Material.Dark ? C.colorBgDark : C.colorBgLight
+    color: themeManager.backgroundColor
 
     property date currentDate: new Date()
     readonly property string currentDateStr: Qt.formatDate(currentDate, "yyyyMMdd")
@@ -26,12 +26,17 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        // 日期导航栏
+        // 日期导航栏（亚克力半透明效果）
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: C.heightXLarge + 16
-            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
-            border.color: Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight
+            color: Qt.rgba(
+                themeManager.surfaceColor.r,
+                themeManager.surfaceColor.g,
+                themeManager.surfaceColor.b,
+                themeManager.acrylicEnabled ? themeManager.acrylicOpacity : 1.0
+            )
+            border.color: themeManager.borderColor
             border.width: 1
 
             RowLayout {
@@ -51,7 +56,7 @@ Rectangle {
                     text: Qt.formatDate(timelineRoot.currentDate, "yyyy年MM月dd日 dddd")
                     font.pixelSize: C.fontSizeHeader
                     font.bold: true
-                    color: Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark
+                    color: themeManager.textColor
                 }
 
                 RoundButton {
@@ -112,14 +117,14 @@ Rectangle {
                             text: hourDelegate.timeString
                             font.pixelSize: C.fontSizeLarge
                             font.bold: hourDelegate.isCurrentHour
-                            color: hourDelegate.isCurrentHour ? C.colorPrimaryDark : C.colorTextSecondary
+                            color: hourDelegate.isCurrentHour ? themeManager.primaryColor : C.colorTextSecondary
                             Layout.preferredWidth: 60
                         }
 
                         Rectangle {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 1
-                            color: hourDelegate.isCurrentHour ? C.colorPrimary : C.colorBorderLight
+                            color: hourDelegate.isCurrentHour ? themeManager.primaryColor : themeManager.borderColor
                         }
                     }
 
@@ -132,7 +137,7 @@ Rectangle {
                         width: 12
                         height: 12
                         radius: 6
-                        color: C.colorPrimary
+                        color: themeManager.primaryColor
 
                         SequentialAnimation on scale {
                             loops: Animation.Infinite
@@ -187,14 +192,14 @@ Rectangle {
                         height: C.taskBlockHeight
                         radius: C.radiusSmall
                         color: Qt.rgba(0x25/255, 0x63/255, 0xEB/255, 0.2)
-                        border.color: C.colorPrimary
+                        border.color: themeManager.primaryColor
                         border.width: 2
 
                         Label {
                             anchors.centerIn: parent
                             text: "放置到 " + hourDelegate.timeString
                             font.pixelSize: C.fontSizeSmall
-                            color: C.colorPrimaryDark
+                            color: themeManager.primaryColor
                             font.bold: true
                         }
 
@@ -224,9 +229,9 @@ Rectangle {
                             anchors.topMargin: 4 + index * (C.taskBlockHeight + C.taskBlockSpacing)
                             height: C.taskBlockHeight
                             radius: C.radiusSmall
-                            color: modelData.color || C.colorPrimary
+                            color: modelData.color || themeManager.primaryColor
                             opacity: 0.9
-                            border.color: Qt.darker(modelData.color || C.colorPrimary, 1.3)
+                            border.color: Qt.darker(modelData.color || themeManager.primaryColor, 1.3)
                             border.width: 1
 
                             RowLayout {
@@ -276,7 +281,7 @@ Rectangle {
 
                     Rectangle {
                         anchors.fill: parent
-                        color: C.colorDanger
+                        color: themeManager.dangerColor
                     }
 
                     Rectangle {
@@ -286,7 +291,7 @@ Rectangle {
                         width: 52
                         height: 22
                         radius: C.radiusSmall
-                        color: C.colorDanger
+                        color: themeManager.dangerColor
 
                         Label {
                             anchors.centerIn: parent
@@ -313,8 +318,8 @@ Rectangle {
             Layout.preferredWidth: 64
             Layout.preferredHeight: 64
             radius: 32
-            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
-            border.color: Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight
+            color: themeManager.surfaceColor
+            border.color: themeManager.borderColor
             border.width: 1
 
             Label {

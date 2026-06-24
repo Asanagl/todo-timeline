@@ -11,11 +11,10 @@ ApplicationWindow {
     width: 1280
     height: 840
     title: "Todo Timeline"
-    Material.theme: darkModeEnabled ? Material.Dark : Material.Light
-    Material.primary: C.colorPrimary
-    Material.accent: C.colorPrimary
-
-    property bool darkModeEnabled: false
+    Material.theme: themeManager.darkModeEnabled ? Material.Dark : Material.Light
+    Material.primary: themeManager.primaryColor
+    Material.accent: themeManager.accentColor
+    color: themeManager.backgroundColor
 
     // ============ 键盘快捷键 ============
     Shortcut {
@@ -49,9 +48,14 @@ ApplicationWindow {
     Shortcut {
         sequence: "Ctrl+D"
         onActivated: {
-            darkModeEnabled = !darkModeEnabled
-            notification.show(darkModeEnabled ? "已切换到深色模式" : "已切换到浅色模式")
+            themeManager.setDarkModeEnabled(!themeManager.darkModeEnabled)
+            notification.show(themeManager.darkModeEnabled ? "已切换到深色模式" : "已切换到浅色模式")
         }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+T"
+        onActivated: themeSettingsDialog.open()
     }
 
     Shortcut {
@@ -60,6 +64,7 @@ ApplicationWindow {
             if (taskCreator.visible) taskCreator.close()
             else if (taskEditor.visible) taskEditor.close()
             else if (deleteConfirm.visible) deleteConfirm.close()
+            else if (themeSettingsDialog.visible) themeSettingsDialog.close()
         }
     }
 
@@ -88,7 +93,17 @@ ApplicationWindow {
 
     // ============ 底部工具栏 ============
     footer: ToolBar {
-        Material.background: C.colorPrimary
+        Material.background: themeManager.primaryColor
+
+        // 亚克力半透明背景
+        background: Rectangle {
+            color: Qt.rgba(
+                themeManager.darkModeEnabled ? 0x1F/255 : 1.0,
+                themeManager.darkModeEnabled ? 0x29/255 : 1.0,
+                themeManager.darkModeEnabled ? 0x37/255 : 1.0,
+                themeManager.acrylicEnabled ? themeManager.acrylicOpacity : 1.0
+            )
+        }
 
         RowLayout {
             anchors.fill: parent
@@ -106,6 +121,13 @@ ApplicationWindow {
                 text: "分类"
                 onClicked: categoryDialog.open()
                 ToolTip.text: "管理分类"
+                ToolTip.visible: hovered
+            }
+
+            ToolButton {
+                text: "主题"
+                onClicked: themeSettingsDialog.open()
+                ToolTip.text: "主题设置 (Ctrl+T)"
                 ToolTip.visible: hovered
             }
 
@@ -169,10 +191,10 @@ ApplicationWindow {
             Item { Layout.fillWidth: true }
 
             ToolButton {
-                text: darkModeEnabled ? "浅色" : "深色"
+                text: themeManager.darkModeEnabled ? "浅色" : "深色"
                 onClicked: {
-                    darkModeEnabled = !darkModeEnabled
-                    notification.show(darkModeEnabled ? "已切换到深色模式" : "已切换到浅色模式")
+                    themeManager.setDarkModeEnabled(!themeManager.darkModeEnabled)
+                    notification.show(themeManager.darkModeEnabled ? "已切换到深色模式" : "已切换到浅色模式")
                 }
                 ToolTip.text: "切换主题 (Ctrl+D)"
                 ToolTip.visible: hovered
@@ -246,6 +268,7 @@ ApplicationWindow {
                     { key: "Ctrl+E", desc: "导出数据" },
                     { key: "Ctrl+I", desc: "导入数据" },
                     { key: "Ctrl+D", desc: "切换深色/浅色模式" },
+                    { key: "Ctrl+T", desc: "主题设置" },
                     { key: "Esc", desc: "关闭对话框" },
                     { key: "Home", desc: "回到今天" }
                 ]
@@ -258,8 +281,8 @@ ApplicationWindow {
                         Layout.preferredWidth: keyLabel.implicitWidth + 16
                         Layout.preferredHeight: C.heightSmall
                         radius: C.radiusSmall
-                        color: root.darkModeEnabled ? C.colorSurfaceDark : C.colorStripeLight
-                        border.color: root.darkModeEnabled ? C.colorBorderDark : C.colorBorderLight
+                        color: themeManager.surfaceColor
+                        border.color: themeManager.borderColor
                         border.width: 1
 
                         Label {
@@ -269,7 +292,7 @@ ApplicationWindow {
                             font.pixelSize: C.fontSizeSmall
                             font.bold: true
                             font.family: "JetBrains Mono"
-                            color: root.darkModeEnabled ? C.colorTextLight : C.colorTextDark
+                            color: themeManager.textColor
                         }
                     }
 
@@ -328,11 +351,16 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 80
         anchors.horizontalCenter: parent.horizontalCenter
-        color: C.colorDanger
+        color: themeManager.dangerColor
     }
 
     CategoryDialog {
         id: categoryDialog
+        anchors.centerIn: parent
+    }
+
+    ThemeSettingsDialog {
+        id: themeSettingsDialog
         anchors.centerIn: parent
     }
 

@@ -16,7 +16,7 @@ Rectangle {
     radius: 17
     color: root.circleColor
     border.color: (root.selector && root.selector.currentIndex === root.circleIndex)
-        ? (Material.theme === Material.Dark ? C.colorTextOnAccent : C.colorTextDark)
+        ? themeManager.textColor
         : "transparent"
     border.width: (root.selector && root.selector.currentIndex === root.circleIndex) ? 3 : 0
 

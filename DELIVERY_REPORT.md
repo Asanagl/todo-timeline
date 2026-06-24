@@ -4,16 +4,83 @@
 
 本次交付针对 Qt6/QML 待办事项应用完成了全面的视觉与性能优化，并修复了在回归测试过程中发现的关键 QML 运行时错误。应用已重新构建、部署并通过截图验证。
 
-**当前版本：v1.2.0（2026-06-24 全面优化）**
+**当前版本：v1.3.0（2026-06-24 主题管理系统）**
 
 - **构建状态**：成功（0 错误）
-- **构建目录**：`build_mingw2/`
-- **截图验证**：`screenshot_*.png`（共 9 张）
-- **Qt 版本**：6.8.0（MinGW 13.1 64-bit）
+- **构建环境**：Qt 6.7.2 + MSVC 2022 64-bit
+- **Qt 版本**：6.7.2（msvc2019_64）
 
-## 2. v1.2.0 优化内容（2026-06-24）
+## 2. v1.3.0 交付内容（2026-06-24）
 
-### 2.1 功能补全（TaskEditor 对称化）
+### 2.1 自定义配色系统
+
+| 功能 | 说明 | 主要涉及文件 |
+|---|---|---|
+| ThemeManager C++ 类 | 管理 9 种自定义颜色 + 深色模式 + 亚克力设置，QSettings 持久化 | `src/thememanager.h/.cpp` |
+| 6 套预设主题 | 海洋蓝、森林绿、日落橙、皇家紫、极简灰、极光 | `src/thememanager.cpp` |
+| 主题设置对话框 | Tab 布局：预设主题 GridView + 自定义配色编辑器 | `qml/ThemeSettingsDialog.qml` |
+| ColorDialog 集成 | 可视化颜色选取 + hex 手动输入 | `qml/ThemeSettingsDialog.qml` |
+| 快照/恢复机制 | 取消按钮恢复打开时的主题配置 | `qml/ThemeSettingsDialog.qml` |
+| Ctrl+T 快捷键 | 快速打开主题设置对话框 | `qml/Main.qml` |
+
+### 2.2 亚克力材质效果
+
+| 应用位置 | 实现方式 | 主要涉及文件 |
+|---|---|---|
+| 底部工具栏 | Qt.rgba 半透明背景 | `qml/Main.qml` |
+| 任务列表标题栏 | Qt.rgba 半透明背景 | `qml/TaskList.qml` |
+| 时间轴日期导航栏 | Qt.rgba 半透明背景 | `qml/Timeline.qml` |
+| 任务卡片 | Qt.rgba 半透明背景（性能优先） | `qml/TaskItem.qml` |
+| 创建/编辑任务对话框 | Qt.rgba 半透明背景（最低 85% 不透明度） | `qml/TaskCreator.qml`、`qml/TaskEditor.qml` |
+| 分类/删除确认对话框 | Qt.rgba 半透明背景（最低 85% 不透明度） | `qml/CategoryDialog.qml`、`qml/DeleteConfirmDialog.qml` |
+| AcrylicPanel 组件 | MultiEffect + ShaderEffectSource 真实模糊（可复用） | `qml/AcrylicPanel.qml` |
+
+### 2.3 透明度调整功能
+
+| 功能 | 说明 |
+|---|---|
+| 透明度滑块 | 范围 0-100%，步进 5%，实时预览 |
+| 持久化存储 | 通过 QSettings 保存 acrylicOpacity 值 |
+| 优雅降级 | 关闭亚克力效果时回退为不透明背景 |
+| 可读性保障 | 对话框最低保持 85% 不透明度 |
+
+### 2.4 颜色迁移
+
+| 迁移项 | 说明 | 主要涉及文件 |
+|---|---|---|
+| C.colorPrimary → themeManager.primaryColor | 主色调迁移 | 全部 QML 文件 |
+| C.colorSuccess/Warning/Danger → themeManager.xxxColor | 语义色迁移 | 全部 QML 文件 |
+| C.colorSurface/Background/Text/Border → themeManager.xxxColor | 模式感知颜色迁移 | 全部 QML 文件 |
+| Timeline.qml C.colorBorderLight → themeManager.borderColor | 残留颜色引用修复 | `qml/Timeline.qml` |
+
+### 2.5 新增文件清单
+
+| 文件 | 类型 | 说明 |
+|---|---|---|
+| `src/thememanager.h` | C++ 头文件 | ThemeManager 类定义 |
+| `src/thememanager.cpp` | C++ 实现 | ThemeManager 实现（QSettings 持久化、6 套预设） |
+| `qml/ThemeSettingsDialog.qml` | QML 对话框 | 主题设置界面（预设/自定义/亚克力控制） |
+| `qml/AcrylicPanel.qml` | QML 组件 | 可复用亚克力模糊面板 |
+
+### 2.6 修改文件清单
+
+| 文件 | 修改内容 |
+|---|---|
+| `CMakeLists.txt` | 版本 1.2.0→1.3.0，新增 ThemeManager 源文件和 QML 文件 |
+| `resources.qrc` | 新增 AcrylicPanel.qml 和 ThemeSettingsDialog.qml 资源 |
+| `src/main.cpp` | 版本号更新，注册 themeManager context property |
+| `qml/Main.qml` | Material 属性绑定 themeManager，Ctrl+T 快捷键，主题 ToolButton，亚克力工具栏 |
+| `qml/Timeline.qml` | 颜色迁移到 themeManager，亚克力日期导航栏，修复 C.colorBorderLight |
+| `qml/TaskList.qml` | 颜色迁移，亚克力标题栏 |
+| `qml/TaskItem.qml` | 颜色迁移，亚克力半透明背景 |
+| `qml/TaskCreator.qml` | 颜色迁移，亚克力对话框背景 |
+| `qml/TaskEditor.qml` | 颜色迁移，亚克力对话框背景 |
+| `qml/CategoryDialog.qml` | 颜色迁移，亚克力对话框背景 |
+| `qml/DeleteConfirmDialog.qml` | 颜色迁移，亚克力对话框背景 |
+
+## 3. v1.2.0 历史优化内容
+
+### 3.1 功能补全（TaskEditor 对称化）
 
 | 优化项 | 说明 | 主要涉及文件 |
 |---|---|---|

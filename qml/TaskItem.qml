@@ -8,12 +8,17 @@ Rectangle {
     id: taskItemRoot
     height: taskItemRoot.isExpanded ? 120 : 96
     radius: C.radiusLarge
-    color: task.completed
-        ? (Material.theme === Material.Dark ? C.colorCompletedBgDark : C.colorSuccessBg)
-        : (Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight)
+    // 亚克力半透明背景（性能优先：不实时模糊，仅半透明）
+    color: {
+        var baseColor = task.completed
+            ? (Material.theme === Material.Dark ? C.colorCompletedBgDark : C.colorSuccessBg)
+            : themeManager.surfaceColor
+        var alpha = themeManager.acrylicEnabled ? themeManager.acrylicOpacity : 1.0
+        return Qt.rgba(baseColor.r, baseColor.g, baseColor.b, alpha)
+    }
     border.color: task.completed
-        ? C.colorSuccess
-        : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+        ? themeManager.successColor
+        : themeManager.borderColor
     border.width: task.completed ? 2 : 1
 
     property var task: null
@@ -23,10 +28,10 @@ Rectangle {
 
     function priorityColor(priority) {
         switch (priority) {
-        case 0: return C.colorSuccess
-        case 1: return C.colorWarning
-        case 2: return C.colorDanger
-        default: return C.colorSuccess
+        case 0: return themeManager.successColor
+        case 1: return themeManager.warningColor
+        case 2: return themeManager.dangerColor
+        default: return themeManager.successColor
         }
     }
 
@@ -56,7 +61,7 @@ Rectangle {
         CheckBox {
             id: completionCheckBox
             checked: taskItemRoot.task.completed
-            Material.accent: C.colorSuccess
+            Material.accent: themeManager.successColor
             Layout.alignment: Qt.AlignVCenter
 
             onToggled: {
@@ -96,7 +101,7 @@ Rectangle {
                     font.pixelSize: C.fontSizeTitle
                     font.bold: true
                     font.strikeout: taskItemRoot.task.completed
-                    color: taskItemRoot.task.completed ? C.colorTextMuted : (Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark)
+                    color: taskItemRoot.task.completed ? C.colorTextMuted : themeManager.textColor
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                 }
@@ -151,7 +156,7 @@ Rectangle {
                 Label {
                     text: Qt.formatTime(taskItemRoot.task.startTime, "HH:mm") + " - " + Qt.formatTime(taskItemRoot.task.endTime, "HH:mm")
                     font.pixelSize: C.fontSizeSmall
-                    color: C.colorPrimary
+                    color: themeManager.primaryColor
                     font.bold: true
                 }
 
@@ -162,7 +167,7 @@ Rectangle {
                     Layout.preferredWidth: reminderIcon.implicitWidth + C.badgePaddingH
                     radius: (C.badgeHeight - 4) / 2
                     color: C.colorDangerBg
-                    border.color: C.colorDanger
+                    border.color: themeManager.dangerColor
                     border.width: 1
 
                     Label {
@@ -171,7 +176,7 @@ Rectangle {
                         text: "提醒"
                         font.pixelSize: C.fontSizeMin
                         font.bold: true
-                        color: C.colorDanger
+                        color: themeManager.dangerColor
                     }
                 }
             }
@@ -210,7 +215,7 @@ Rectangle {
                 flat: true
                 Layout.preferredWidth: 36
                 Layout.preferredHeight: 36
-                Material.foreground: C.colorDanger
+                Material.foreground: themeManager.dangerColor
                 onClicked: {
                     if (taskItemRoot.deleteConfirmDialog) {
                         taskItemRoot.deleteConfirmDialog.confirmDelete(taskItemRoot.task.id, taskItemRoot.task.title)

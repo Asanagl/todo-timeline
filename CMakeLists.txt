@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(TodoApp VERSION 1.2.0 LANGUAGES CXX)
+project(TodoApp VERSION 1.3.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,6 +18,7 @@ set(SOURCES
     src/main.cpp
     src/taskmanager.cpp
     src/timelinemodel.cpp
+    src/thememanager.cpp
     src/logger.cpp
 )
 
@@ -25,6 +26,7 @@ set(SOURCES
 set(HEADERS
     src/taskmanager.h
     src/timelinemodel.h
+    src/thememanager.h
     src/logger.h
 )
 
@@ -42,6 +44,8 @@ set(QML_FILES
     qml/PriorityButton.qml
     qml/ColorCircle.qml
     qml/ColorCircleSmall.qml
+    qml/AcrylicPanel.qml
+    qml/ThemeSettingsDialog.qml
     qml/AppConstants.js
 )
 

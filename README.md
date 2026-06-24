@@ -2,7 +2,7 @@
 
 一个基于 Qt6/C++ 的跨平台任务管理应用，采用 Qt Quick/QML 构建现代化 UI，支持 Windows、Linux 与 Android。
 
-- **当前版本**：1.1.0
+- **当前版本**：1.3.0
 - **Qt 版本**：6.8.0（推荐），最低 6.5
 - **C++ 标准**：C++17
 - **构建工具**：CMake 3.16+
@@ -19,6 +19,9 @@
 - **数据持久化**：本地 JSON 存储，自动保存/加载
 - **导入/导出**：支持任务数据的 JSON 导入与导出
 - **主题切换**：浅色 / 深色模式
+- **自定义配色**：6 套预设主题 + 完整调色板自定义（主色调、辅助色、成功/警告/危险色等 9 种颜色）
+- **亚克力材质**：导航栏、任务卡片、对话框、时间轴头部的半透明模糊效果
+- **透明度调整**：0-100% 透明度滑块，实时预览亚克力效果
 - **动画效果**：任务增删、完成、对话框、按钮悬停等流畅动画
 - **跨平台支持**：Windows（MinGW/MSVC）、Linux（GCC）、Android
 
@@ -227,7 +230,9 @@ todo-qt/
 │   ├── Notification.qml        # 提醒通知
 │   ├── PriorityButton.qml      # 优先级选择按钮
 │   ├── ColorCircle.qml         # 颜色选择器
-│   └── ColorCircleSmall.qml    # 小型颜色选择器
+│   ├── ColorCircleSmall.qml    # 小型颜色选择器
+│   ├── AcrylicPanel.qml        # 亚克力材质面板组件
+│   └── ThemeSettingsDialog.qml # 主题设置对话框
 ├── icons/                      # SVG 图标资源
 ├── android/                    # Android 配置文件
 └── .github/workflows/          # GitHub Actions CI/CD
@@ -265,6 +270,8 @@ todo-qt/
 
 ### 切换主题
 - 应用支持浅色/深色模式切换
+- `Ctrl+T` 打开主题设置对话框，可选择预设主题或自定义配色
+- 支持调整亚克力效果的透明度（0-100%）
 
 ## 数据存储
 
@@ -289,7 +296,9 @@ $env:TODO_APP_DATA_DIR = "C:\path\to\test_data"
 
 ### 修改主题与样式
 
-编辑 `qml/AppConstants.js` 调整颜色、间距、圆角、字体等全局样式常量。
+- 运行时通过 `Ctrl+T` 打开主题设置对话框进行可视化配置
+- 主题设置（配色、亚克力效果、透明度）通过 QSettings 持久化存储
+- 编辑 `qml/AppConstants.js` 调整间距、圆角、字体等全局样式常量
 
 ### 修改全局字体
 

@@ -14,6 +14,19 @@ Dialog {
     property string taskId: ""
     property string taskTitle: ""
 
+    // 亚克力半透明背景
+    background: Rectangle {
+        color: Qt.rgba(
+            themeManager.surfaceColor.r,
+            themeManager.surfaceColor.g,
+            themeManager.surfaceColor.b,
+            themeManager.acrylicEnabled ? Math.max(0.85, themeManager.acrylicOpacity) : 1.0
+        )
+        border.color: themeManager.borderColor
+        border.width: 1
+        radius: C.radiusLarge
+    }
+
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: C.animDurationEnter }
         NumberAnimation { property: "scale"; from: 0.9; to: 1.0; duration: C.animDurationEnter; easing.type: Easing.OutBack }
@@ -50,7 +63,7 @@ Dialog {
                     text: "!"
                     font.pixelSize: 24
                     font.bold: true
-                    color: C.colorWarning
+                    color: themeManager.warningColor
                 }
             }
 
@@ -75,7 +88,7 @@ Dialog {
                 Layout.fillWidth: true
                 text: "此操作无法撤销"
                 font.pixelSize: C.fontSizeSmall
-                color: C.colorDanger
+                color: themeManager.dangerColor
                 horizontalAlignment: Text.AlignHCenter
             }
         }
@@ -93,7 +106,7 @@ Dialog {
 
             Button {
                 text: "删除"
-                Material.background: C.colorDanger
+                Material.background: themeManager.dangerColor
                 Material.foreground: "white"
                 Layout.fillWidth: true
                 Layout.preferredHeight: C.heightLarge

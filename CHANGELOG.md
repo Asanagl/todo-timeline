@@ -16,6 +16,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Task dependencies
 - Multi-language support (i18n)
 
+## [1.3.0] - 2026-06-24
+
+### Added
+- ThemeManager C++ class (`src/thememanager.h/.cpp`):
+  - 9 customizable color Q_PROPERTYs: primaryColor, accentColor, successColor, warningColor, dangerColor, backgroundColor, surfaceColor, textColor, borderColor
+  - 3 control properties: darkModeEnabled, acrylicEnabled, acrylicOpacity
+  - 6 preset themes: 海洋蓝, 森林绿, 日落橙, 皇家紫, 极简灰, 极光
+  - Q_INVOKABLE methods: presetNames(), presetColors(int), applyPreset(int), resetToDefault()
+  - QSettings persistence (org: "TodoApp", app: "Todo Timeline")
+  - Mode-aware colors: dark mode returns hardcoded dark variants for background/surface/text/border
+- ThemeSettingsDialog.qml:
+  - Tab-based UI: 预设主题 (GridView with 6 preset cards) | 自定义配色 (9 color editors + controls)
+  - ColorDialog integration for visual color picking
+  - Hex TextField for manual color input (#RRGGBB format)
+  - Dark mode Switch
+  - Acrylic effect Switch
+  - Transparency Slider (0-100%, step 5%)
+  - Snapshot/restore mechanism for cancel button
+  - Real-time preview via themeManager setters
+- AcrylicPanel.qml:
+  - Reusable acrylic blur panel component
+  - MultiEffect + ShaderEffectSource for real blur
+  - Gradient texture overlay for frosted glass effect
+  - Graceful degradation when acrylic disabled
+- Acrylic semi-transparent backgrounds applied to:
+  - Main.qml footer toolbar
+  - TaskList.qml header
+  - Timeline.qml date navigation header
+  - TaskItem.qml task cards
+  - TaskCreator.qml, TaskEditor.qml, CategoryDialog.qml, DeleteConfirmDialog.qml dialogs
+- Ctrl+T shortcut for opening theme settings dialog
+- "主题" ToolButton in footer toolbar
+
+### Changed
+- Version bumped to 1.3.0
+- Main.qml Material.theme/primary/accent/color bound to themeManager properties
+- All UI files migrated from C.colorXxx to themeManager.xxxColor for theme-aware colors
+- Timeline.qml line 127: C.colorBorderLight → themeManager.borderColor
+
+### Performance
+- Acrylic effect uses semi-transparent simulation (Qt.rgba) for dynamic elements (task cards) to prioritize performance
+- Real blur (MultiEffect) reserved for static elements via AcrylicPanel component
+- Dialog acrylic backgrounds use Math.max(0.85, opacity) to ensure readability
+
 ## [1.2.0] - 2026-06-24
 
 ### Added
@@ -189,6 +233,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.3.0** (2026-06-24): ThemeManager, custom color system, acrylic effects, transparency control
+- **1.2.0** (2026-06-24): TaskEditor symmetry, visual/UX enhancements, engineering cleanup
 - **1.1.0** (2026-06-21): UI refresh, categories, reminders, search, theme switch, performance improvements
 - **1.0.0** (2026-06-17): Initial release with core functionality
 - **0.1.0** (Development): Internal development version

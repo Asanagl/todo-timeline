@@ -6,7 +6,7 @@ import "AppConstants.js" as C
 
 Rectangle {
     id: taskListRoot
-    color: Material.theme === Material.Dark ? C.colorBgDark : C.colorBgLight
+    color: themeManager.backgroundColor
 
     property alias listView: taskListView
     property alias searchField: searchField
@@ -17,11 +17,16 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        // 标题栏
+        // 标题栏（亚克力半透明效果）
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: C.heightXLarge + 16
-            color: Material.primary
+            color: Qt.rgba(
+                themeManager.darkModeEnabled ? 0x1F/255 : 1.0,
+                themeManager.darkModeEnabled ? 0x29/255 : 1.0,
+                themeManager.darkModeEnabled ? 0x37/255 : 1.0,
+                themeManager.acrylicEnabled ? themeManager.acrylicOpacity : 1.0
+            )
 
             RowLayout {
                 anchors.fill: parent
@@ -53,8 +58,8 @@ Rectangle {
             Layout.margins: C.paddingLarge
             Layout.preferredHeight: C.heightXLarge
             radius: C.radiusLarge
-            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
-            border.color: searchField.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+            color: themeManager.surfaceColor
+            border.color: searchField.activeFocus ? themeManager.primaryColor : themeManager.borderColor
             border.width: searchField.activeFocus ? 2 : 1
 
             RowLayout {

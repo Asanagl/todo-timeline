@@ -13,6 +13,19 @@ Dialog {
 
     property string editingCategoryId: ""
 
+    // 亚克力半透明背景
+    background: Rectangle {
+        color: Qt.rgba(
+            themeManager.surfaceColor.r,
+            themeManager.surfaceColor.g,
+            themeManager.surfaceColor.b,
+            themeManager.acrylicEnabled ? Math.max(0.85, themeManager.acrylicOpacity) : 1.0
+        )
+        border.color: themeManager.borderColor
+        border.width: 1
+        radius: C.radiusLarge
+    }
+
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: C.animDurationDialog }
         NumberAnimation { property: "scale"; from: 0.8; to: 1.0; duration: C.animDurationDialog; easing.type: Easing.OutBack }
@@ -35,8 +48,8 @@ Dialog {
 
         background: Rectangle {
             radius: C.radiusMedium
-            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
-            border.color: parent.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+            color: themeManager.surfaceColor
+            border.color: parent.activeFocus ? themeManager.primaryColor : themeManager.borderColor
             border.width: parent.activeFocus ? 2 : 1
         }
     }
@@ -54,7 +67,7 @@ Dialog {
                 text: "新建分类"
                 font.bold: true
                 font.pixelSize: C.fontSizeLarge
-                color: Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark
+                color: themeManager.textColor
             }
 
             RowLayout {
@@ -74,8 +87,8 @@ Dialog {
                     radius: C.heightMedium / 2
                     color: newCategoryColorSelector.currentIndex >= 0
                         ? C.taskColors[newCategoryColorSelector.currentIndex]
-                        : C.colorPrimary
-                    border.color: Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight
+                        : themeManager.primaryColor
+                    border.color: themeManager.borderColor
                     border.width: 1
 
                     MouseArea {
@@ -87,7 +100,7 @@ Dialog {
 
                 Button {
                     text: "添加"
-                    Material.background: C.colorPrimary
+                    Material.background: themeManager.primaryColor
                     Material.foreground: "white"
                     Layout.preferredHeight: C.heightLarge
                     enabled: newCategoryNameField.text.trim().length > 0
@@ -122,7 +135,7 @@ Dialog {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
-            color: Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight
+            color: themeManager.borderColor
         }
 
         // 分类列表
@@ -135,7 +148,7 @@ Dialog {
                 text: "现有分类"
                 font.bold: true
                 font.pixelSize: C.fontSizeLarge
-                color: Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark
+                color: themeManager.textColor
             }
 
             ListView {
@@ -153,7 +166,7 @@ Dialog {
 
                     height: C.heightXLarge
                     radius: C.radiusMedium
-                    color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorBgLight
+                    color: themeManager.backgroundColor
 
                     RowLayout {
                         anchors.fill: parent
@@ -175,7 +188,7 @@ Dialog {
                             font.bold: true
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignVCenter
-                            color: Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark
+                            color: themeManager.textColor
                         }
 
                         Label {
@@ -206,7 +219,7 @@ Dialog {
                                 icon.source: "qrc:/icons/delete.svg"
                                 icon.width: 18
                                 icon.height: 18
-                                Material.foreground: C.colorDanger
+                                Material.foreground: themeManager.dangerColor
                                 onClicked: {
                                     deleteCategoryConfirm.deleteCategoryId = modelData.id
                                     deleteCategoryConfirm.open()
