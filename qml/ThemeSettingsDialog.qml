@@ -149,9 +149,8 @@ Dialog {
                     width: parent.width
                     height: parent.height
                     cellWidth: (width - C.spacingMedium) / 2
-                    cellHeight: 140
+                    cellHeight: 140 + C.spacingMedium
                     model: themeManager.presetNames()
-                    spacing: C.spacingMedium
 
                     delegate: Rectangle {
                         required property int index
