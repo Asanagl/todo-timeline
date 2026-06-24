@@ -379,9 +379,9 @@ Dialog {
                 highlighted: true
 
                 onClicked: {
-                    var newTaskId = taskCreatorDialog.selectedCategoryId !== ""
-                        ? taskManager.addTaskWithCategory(titleField.text, descriptionField.text, taskCreatorDialog.selectedCategoryId)
-                        : taskManager.addTask(titleField.text, descriptionField.text)
+                    var priority = prioritySelector.currentIndex
+                    var color = C.taskColors[colorSelector.currentIndex]
+                    var newTaskId = taskManager.addTaskFull(titleField.text, descriptionField.text, priority, color, taskCreatorDialog.selectedCategoryId)
 
                     if (scheduleCheckBox.checked && newTaskId !== "") {
                         var startTime = new Date()

@@ -503,6 +503,10 @@ QString TaskManager::addTask(const QString &title, const QString &description) {
 }
 
 QString TaskManager::addTaskWithCategory(const QString &title, const QString &description, const QString &categoryId) {
+    return addTaskFull(title, description, 0, QStringLiteral("#4A90D9"), categoryId);
+}
+
+QString TaskManager::addTaskFull(const QString &title, const QString &description, int priority, const QString &color, const QString &categoryId) {
     if (m_tasks.size() >= MAX_TASKS) {
         LOG_WARNING("TaskManager", QStringLiteral("Maximum task count reached: %1").arg(MAX_TASKS));
         return QString();
@@ -511,6 +515,10 @@ QString TaskManager::addTaskWithCategory(const QString &title, const QString &de
     if (trimmedTitle.isEmpty()) return QString();
 
     Task *task = new Task(trimmedTitle, description, this);
+    task->setPriority(qBound(0, priority, 2));
+    if (Task::isValidColor(color)) {
+        task->setColor(color);
+    }
     if (!categoryId.isEmpty() && m_categoryHash.contains(categoryId)) {
         task->setCategory(categoryId);
     }

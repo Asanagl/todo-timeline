@@ -185,6 +185,7 @@ public:
     // Task operations
     Q_INVOKABLE QString addTask(const QString &title, const QString &description);
     Q_INVOKABLE QString addTaskWithCategory(const QString &title, const QString &description, const QString &categoryId);
+    Q_INVOKABLE QString addTaskFull(const QString &title, const QString &description, int priority, const QString &color, const QString &categoryId);
     Q_INVOKABLE void removeTask(const QString &taskId);
     Q_INVOKABLE void updateTaskFull(const QString &taskId, const QString &title, const QString &description,
                                      int priority, const QString &color, const QString &categoryId);
