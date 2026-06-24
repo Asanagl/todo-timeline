@@ -7,7 +7,7 @@ Rectangle {
     width: notificationText.implicitWidth + 40
     height: C.heightLarge
     radius: C.heightLarge / 2
-    color: "#323232"
+    color: C.colorNotification
     opacity: 0
     scale: 0.8
 
@@ -22,7 +22,7 @@ Rectangle {
     Label {
         id: notificationText
         anchors.centerIn: parent
-        color: "white"
+        color: C.colorTextOnAccent
         font.pixelSize: C.fontSizeLarge
     }
 

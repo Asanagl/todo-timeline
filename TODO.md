@@ -7,6 +7,7 @@
 - [x] 优化时间轴拖拽体验
 - [x] 添加任务搜索功能
 - [x] 实现数据导入/导出功能
+- [x] TaskEditor 功能对称化（支持编辑分类/时间/提醒）
 
 ## 中优先级 (Medium Priority)
 
@@ -143,6 +144,16 @@
   - 更新 GitHub Actions 至 Qt 6.8.0 + MSVC 2022
   - 生成自动化截图与交付报告
   - 更新 README.md、QUICKSTART.md、CHANGELOG.md、TODO.md 等文档
+- **2026-06-24**: v1.2.0 全面优化与演示版本交付
+  - TaskEditor 功能对称化：支持编辑分类/时间安排/提醒设置
+  - 新增 C++ 后端 API：updateTaskSchedule、updateTaskReminder
+  - TaskItem 视觉增强：优先级文字标签、提醒标识、自适应高度、完成态背景色
+  - Timeline 任务块增强：显示时间范围、增加高度与边框、空状态提示
+  - 工具栏优化：任务计数显示已完成/总数、星期标签胶囊
+  - 工程规范清理：CMakeLists QML_FILES 同步、移除死代码、清理冗余构建目录
+  - 修复 rgba 颜色字符串格式问题（改用 Qt.rgba() 和 #AARRGGBB）
+  - 改进截图脚本：丰富示例数据、修复展开截图坐标
+  - 版本升级至 1.2.0
 
 ---
 

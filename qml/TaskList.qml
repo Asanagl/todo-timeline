@@ -32,7 +32,7 @@ Rectangle {
                     text: "任务列表"
                     font.pixelSize: C.fontSizeDisplay
                     font.bold: true
-                    color: "white"
+                    color: C.colorTextOnAccent
                 }
 
                 Item { Layout.fillWidth: true }

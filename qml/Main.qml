@@ -128,15 +128,42 @@ ApplicationWindow {
             Label {
                 text: Qt.formatDate(new Date(), "yyyy年MM月dd日")
                 font.pixelSize: C.fontSizeLarge
-                color: "white"
+                color: C.colorTextOnAccent
                 font.bold: true
             }
 
-            Label {
-                text: taskManager.totalTaskCount + " 任务"
-                font.pixelSize: C.fontSizeSmall
-                color: "#e5e7eb"
+            Rectangle {
+                Layout.preferredHeight: 24
+                Layout.preferredWidth: weekdayLabel.implicitWidth + 16
+                radius: 12
+                color: Qt.rgba(1, 1, 1, 0.2)
                 visible: taskManager.totalTaskCount > 0
+
+                Label {
+                    id: weekdayLabel
+                    anchors.centerIn: parent
+                    text: Qt.formatDate(new Date(), "dddd")
+                    font.pixelSize: C.fontSizeSmall
+                    color: C.colorTextOnAccent
+                    font.bold: true
+                }
+            }
+
+            Rectangle {
+                Layout.preferredHeight: 24
+                Layout.preferredWidth: taskCountLabel.implicitWidth + 16
+                radius: 12
+                color: Qt.rgba(1, 1, 1, 0.2)
+                visible: taskManager.totalTaskCount > 0
+
+                Label {
+                    id: taskCountLabel
+                    anchors.centerIn: parent
+                    text: taskManager.completedTaskCount + "/" + taskManager.totalTaskCount + " 已完成"
+                    font.pixelSize: C.fontSizeSmall
+                    color: C.colorTextOnAccent
+                    font.bold: true
+                }
             }
 
             Item { Layout.fillWidth: true }
@@ -231,7 +258,7 @@ ApplicationWindow {
                         Layout.preferredWidth: keyLabel.implicitWidth + 16
                         Layout.preferredHeight: C.heightSmall
                         radius: C.radiusSmall
-                        color: root.darkModeEnabled ? C.colorSurfaceDark : "#f3f4f6"
+                        color: root.darkModeEnabled ? C.colorSurfaceDark : C.colorStripeLight
                         border.color: root.darkModeEnabled ? C.colorBorderDark : C.colorBorderLight
                         border.width: 1
 
@@ -242,6 +269,7 @@ ApplicationWindow {
                             font.pixelSize: C.fontSizeSmall
                             font.bold: true
                             font.family: "JetBrains Mono"
+                            color: root.darkModeEnabled ? C.colorTextLight : C.colorTextDark
                         }
                     }
 

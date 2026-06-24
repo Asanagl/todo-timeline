@@ -16,6 +16,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Task dependencies
 - Multi-language support (i18n)
 
+## [1.2.0] - 2026-06-24
+
+### Added
+- TaskEditor functional symmetry completion:
+  - Category editing in TaskEditor (ComboBox with category list)
+  - Schedule time editing in TaskEditor (CheckBox + Tumbler for start/end time)
+  - Reminder editing in TaskEditor (CheckBox + advance minutes SpinBox)
+  - `updateTaskSchedule()` and `updateTaskReminder()` C++ backend APIs
+- Visual/UX enhancements:
+  - Priority text labels (低/中/高) with colored badges on TaskItem
+  - Reminder indicator badge on TaskItem
+  - Adaptive TaskItem height (96px collapsed, 120px expanded)
+  - Completed task background tint (green tint for visual feedback)
+  - Timeline task blocks now show time range ("HH:mm Title") with divider
+  - Timeline task block height increased to 24px with border
+  - Empty state hint in Timeline when no scheduled tasks
+  - Toolbar task counter shows "completed/total" (e.g., "3/5 已完成")
+  - Weekday badge in toolbar
+- New AppConstants.js constants:
+  - `colorStripeLight`/`colorStripeDark` for Timeline stripes
+  - `priorityLabelBgLow`/`Medium`/`High` for priority badges
+  - `colorCompletedBgDark` for completed task background
+  - `taskBlockHeight`/`taskBlockSpacing` for Timeline blocks
+
+### Changed
+- Replaced hardcoded colors in Timeline.qml with AppConstants.js constants
+- CMakeLists.txt QML_FILES synchronized with resources.qrc (added PriorityButton, ColorCircle, ColorCircleSmall, AppConstants.js)
+- Version bumped to 1.2.0
+
+### Fixed
+- Removed unused `reminderHourSpinBox` and `reminderMinuteSpinBox` from TaskCreator.qml (dead code)
+- Fixed rgba color string format issues (use Qt.rgba() and #AARRGGBB format)
+- Fixed capture_ui.py screenshot script:
+  - Richer sample data (5 tasks, 3 categories with varied priorities/colors)
+  - Improved coordinate calculation for schedule/reminder checkbox clicks
+  - Increased wait times for UI stability
+
+### Removed
+- Cleaned up redundant build directories (build/, build_mingw/)
+
 ## [1.1.0] - 2026-06-21
 
 ### Added

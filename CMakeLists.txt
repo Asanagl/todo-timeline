@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(TodoApp VERSION 1.1.0 LANGUAGES CXX)
+project(TodoApp VERSION 1.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,6 +39,10 @@ set(QML_FILES
     qml/Notification.qml
     qml/DeleteConfirmDialog.qml
     qml/CategoryDialog.qml
+    qml/PriorityButton.qml
+    qml/ColorCircle.qml
+    qml/ColorCircleSmall.qml
+    qml/AppConstants.js
 )
 
 # 资源文件

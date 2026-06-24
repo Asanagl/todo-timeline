@@ -24,12 +24,31 @@ var colorTextMuted = "#9CA3AF"
 var colorTextDisabled = "#D1D5DB"
 var colorTextDark = "#111827"
 var colorTextLight = "#F9FAFB"
+// 强调色背景上的文字（统一白色）
+var colorTextOnAccent = "#FFFFFF"
+// 次要标签文字（替代硬编码 #aaa/#666）
+var colorLabelMutedDark = "#AAAAAA"
+var colorLabelMutedLight = "#666666"
+// 通知背景色（Material Design 深灰）
+var colorNotification = "#323232"
 
 // 背景
 var colorBgLight = "#F9FAFB"
 var colorBgDark = "#111827"
 var colorSurfaceLight = "#FFFFFF"
 var colorSurfaceDark = "#1F2937"
+
+// 时间轴条纹背景（替代硬编码颜色）
+var colorStripeLight = "#f3f4f6"
+var colorStripeDark = "#1a2233"
+
+// 优先级标签背景色（半透明，#AARRGGBB 格式）
+var priorityLabelBgLow = "#2610B981"
+var priorityLabelBgMedium = "#26F59E0B"
+var priorityLabelBgHigh = "#26EF4444"
+
+// 完成态背景色
+var colorCompletedBgDark = "#1a3a2a"
 
 var taskColors = [
     colorPrimary, colorSuccess, colorWarning,
@@ -65,6 +84,7 @@ var heightLarge = 44
 var heightXLarge = 52
 
 // 字体
+var fontSizeMin = 11
 var fontSizeSmall = 12
 var fontSizeMedium = 13
 var fontSizeLarge = 14
@@ -72,6 +92,12 @@ var fontSizeXLarge = 15
 var fontSizeTitle = 17
 var fontSizeHeader = 19
 var fontSizeDisplay = 21
+
+// 徽章/标签标准尺寸
+var badgeHeight = 22
+var badgeRadius = 11
+var badgePaddingH = 10
+var badgeFontSize = fontSizeSmall
 
 // 动画
 var animDurationFast = 100
@@ -87,3 +113,7 @@ var dialogWidthLarge = 400
 var dialogWidthXLarge = 440
 var dialogWidthTask = 520
 var dialogWidthCategory = 460
+
+// 时间轴任务块
+var taskBlockHeight = 24
+var taskBlockSpacing = 4

@@ -188,6 +188,10 @@ public:
     Q_INVOKABLE void removeTask(const QString &taskId);
     Q_INVOKABLE void updateTaskFull(const QString &taskId, const QString &title, const QString &description,
                                      int priority, const QString &color, const QString &categoryId);
+    // 功能补全：更新任务时间安排（供 TaskEditor 使用）
+    Q_INVOKABLE void updateTaskSchedule(const QString &taskId, const QDateTime &startTime, const QDateTime &endTime, bool scheduled);
+    // 功能补全：更新任务提醒设置（供 TaskEditor 使用）
+    Q_INVOKABLE void updateTaskReminder(const QString &taskId, bool hasReminder, const QDateTime &reminderTime);
     Q_INVOKABLE void toggleTaskCompletion(const QString &taskId);
     Q_INVOKABLE void scheduleTask(const QString &taskId, const QDateTime &startTime, const QDateTime &endTime);
     Q_INVOKABLE void unscheduleTask(const QString &taskId);

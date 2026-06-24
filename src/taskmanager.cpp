@@ -180,8 +180,8 @@ Task* Task::fromJson(const QJsonObject &json, QObject *parent) {
     task->m_endTime = QDateTime::fromString(json.value(QStringLiteral("endTime")).toString(), Qt::ISODate);
     task->m_completed = json.value(QStringLiteral("completed")).toBool(false);
     task->m_priority = qBound(0, json.value(QStringLiteral("priority")).toInt(0), 2);
-    task->m_color = isValidColor(json.value(QStringLiteral("color")).toString()) 
-        ? json.value(QStringLiteral("color")).toString() 
+    task->m_color = isValidColor(json.value(QStringLiteral("color")).toString())
+        ? json.value(QStringLiteral("color")).toString()
         : QStringLiteral("#4A90D9");
     task->m_scheduled = json.value(QStringLiteral("scheduled")).toBool(false);
     task->m_category = json.value(QStringLiteral("category")).toString(QStringLiteral(""));
@@ -244,7 +244,7 @@ Category* Category::fromJson(const QJsonObject &json, QObject *parent) {
     QString id = json.value(QStringLiteral("id")).toString();
     QString name = json.value(QStringLiteral("name")).toString();
     QString color = json.value(QStringLiteral("color")).toString(QStringLiteral("#4A90D9"));
-    
+
     Category *category = new Category(name, color, parent);
     if (!id.isEmpty()) {
         category->m_id = id;
@@ -514,16 +514,16 @@ QString TaskManager::addTaskWithCategory(const QString &title, const QString &de
     if (!categoryId.isEmpty() && m_categoryHash.contains(categoryId)) {
         task->setCategory(categoryId);
     }
-    
+
     m_tasks.append(task);
     m_taskHash[task->id()] = task;
     invalidateFilter();
-    
+
     emit tasksChanged();
     emit taskAdded(task);
     updateCategoryTaskCount(categoryId, 1);  // 性能优化：增量更新
     scheduleSave();
-    
+
     LOG_DEBUG("TaskManager", QStringLiteral("Added task: %1").arg(task->title()));
     return task->id();
 }
@@ -551,7 +551,7 @@ void TaskManager::removeTask(const QString &taskId) {
     emit tasksChanged();
     updateCategoryTaskCount(oldCategory, -1);  // 性能优化：增量更新
     scheduleSave();
-    
+
     LOG_DEBUG("TaskManager", QStringLiteral("Removed task: %1").arg(taskId));
 }
 
@@ -564,27 +564,91 @@ void TaskManager::updateTaskFull(const QString &taskId, const QString &title, co
     if (trimmedTitle.isEmpty()) return;
 
     QString oldCategory = task->category();
-    
+
     task->setTitle(trimmedTitle);
     task->setDescription(description.trimmed());
     task->setPriority(qBound(0, priority, 2));
     task->setColor(color);
-    
+
     if (!categoryId.isEmpty() && m_categoryHash.contains(categoryId)) {
         task->setCategory(categoryId);
     } else if (categoryId.isEmpty()) {
         task->setCategory(QStringLiteral(""));
     }
-    
+
     invalidateFilter();
     emit tasksChanged();
-    
+
     // 性能优化：增量更新分类计数
     if (oldCategory != task->category()) {
         updateCategoryTaskCount(oldCategory, -1);
         updateCategoryTaskCount(task->category(), 1);
     }
     scheduleSave();
+}
+
+// 功能补全：更新任务时间安排（供 TaskEditor 使用）
+void TaskManager::updateTaskSchedule(const QString &taskId, const QDateTime &startTime, const QDateTime &endTime, bool scheduled) {
+    Task *task = m_taskHash.value(taskId, nullptr);
+    if (!task) return;
+
+    if (scheduled) {
+        task->setStartTime(startTime);
+        task->setEndTime(endTime);
+        task->setScheduled(true);
+
+        if (!m_scheduledTasks.contains(task)) {
+            m_scheduledTasks.append(task);
+            m_tasksByHourCacheValid = false;
+            ++m_scheduledTasksVersion;
+            emit scheduledTasksChanged();
+        } else {
+            // 已在列表中，但时间可能变化，需失效缓存
+            m_tasksByHourCacheValid = false;
+            ++m_scheduledTasksVersion;
+            emit scheduledTasksChanged();
+        }
+
+        emit taskScheduled(task);
+    } else {
+        // 取消安排
+        task->setScheduled(false);
+        task->setStartTime(QDateTime());
+        task->setEndTime(QDateTime());
+
+        if (m_scheduledTasks.removeOne(task)) {
+            m_tasksByHourCacheValid = false;
+            ++m_scheduledTasksVersion;
+            emit scheduledTasksChanged();
+        }
+        emit taskUnscheduled(taskId);
+    }
+
+    scheduleSave();
+
+    LOG_DEBUG("TaskManager", QStringLiteral("Updated schedule for task %1 (scheduled=%2)")
+        .arg(task->title()).arg(scheduled));
+}
+
+// 功能补全：更新任务提醒设置（供 TaskEditor 使用）
+void TaskManager::updateTaskReminder(const QString &taskId, bool hasReminder, const QDateTime &reminderTime) {
+    Task *task = m_taskHash.value(taskId, nullptr);
+    if (!task) return;
+
+    if (hasReminder) {
+        task->setReminderTime(reminderTime);
+        task->setHasReminder(true);
+        m_hasAnyReminders = true;
+    } else {
+        task->setHasReminder(false);
+        task->setReminderTime(QDateTime());
+        updateReminderFlag();
+    }
+
+    scheduleSave();
+
+    LOG_DEBUG("TaskManager", QStringLiteral("Updated reminder for task %1 (hasReminder=%2)")
+        .arg(task->title()).arg(hasReminder));
 }
 
 Task* TaskManager::findTask(const QString &taskId) const {
@@ -648,7 +712,7 @@ void TaskManager::toggleTaskCompletion(const QString &taskId) {
     m_completedCountDirty = true;  // 性能优化：标记缓存失效
     emit tasksChanged();
     scheduleSave();
-    
+
     LOG_DEBUG("TaskManager", QStringLiteral("Task %1 completion toggled to %2")
         .arg(task->title()).arg(task->completed()));
 }
@@ -670,7 +734,7 @@ void TaskManager::scheduleTask(const QString &taskId, const QDateTime &startTime
 
     emit taskScheduled(task);
     scheduleSave();
-    
+
     LOG_DEBUG("TaskManager", QStringLiteral("Scheduled task: %1 from %2 to %3")
         .arg(task->title())
         .arg(startTime.toString())
@@ -718,7 +782,7 @@ void TaskManager::setTaskReminder(const QString &taskId, const QDateTime &remind
     task->setHasReminder(true);
     m_hasAnyReminders = true;  // 性能优化：标记有提醒
     scheduleSave();
-    
+
     LOG_DEBUG("TaskManager", QStringLiteral("Set reminder for task %1 at %2")
         .arg(task->title()).arg(reminderTime.toString()));
 }
@@ -738,17 +802,17 @@ void TaskManager::addCategory(const QString &name, const QString &color) {
         LOG_WARNING("TaskManager", QStringLiteral("Maximum category count reached"));
         return;
     }
-    
+
     QString trimmedName = name.trimmed();
     if (trimmedName.isEmpty()) return;
 
     Category *category = new Category(trimmedName, color, this);
     m_categories.append(category);
     m_categoryHash[category->id()] = category;
-    
+
     emit categoriesChanged();
     saveCategories();
-    
+
     LOG_DEBUG("TaskManager", QStringLiteral("Added category: %1").arg(category->name()));
 }
 
@@ -778,7 +842,7 @@ void TaskManager::removeCategory(const QString &categoryId) {
     emit tasksChanged();
     saveCategories();
     scheduleSave();
-    
+
     LOG_DEBUG("TaskManager", QStringLiteral("Removed category: %1").arg(categoryId));
 }
 
@@ -865,7 +929,7 @@ void TaskManager::loadTasks() {
         emit tasksChanged();
         ++m_scheduledTasksVersion;
         emit scheduledTasksChanged();
-        
+
         LOG_INFO("TaskManager", QStringLiteral("Loaded %1 tasks").arg(m_tasks.size()));
     }
 

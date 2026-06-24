@@ -4,15 +4,51 @@
 
 本次交付针对 Qt6/QML 待办事项应用完成了全面的视觉与性能优化，并修复了在回归测试过程中发现的关键 QML 运行时错误。应用已重新构建、部署并通过截图验证。
 
+**当前版本：v1.2.0（2026-06-24 全面优化）**
+
 - **构建状态**：成功（0 错误）
 - **构建目录**：`build_mingw2/`
-- **部署目录**：`deploy/TodoTimeline/`
-- **截图验证**：`screenshot_*.png`（共 8 张）
+- **截图验证**：`screenshot_*.png`（共 9 张）
 - **Qt 版本**：6.8.0（MinGW 13.1 64-bit）
 
-## 2. 完成的优化项
+## 2. v1.2.0 优化内容（2026-06-24）
 
-### 2.1 视觉与 UI 优化
+### 2.1 功能补全（TaskEditor 对称化）
+
+| 优化项 | 说明 | 主要涉及文件 |
+|---|---|---|
+| TaskEditor 分类编辑 | 增加分类下拉选择（ComboBox） | `qml/TaskEditor.qml` |
+| TaskEditor 时间编辑 | 增加时间安排区块（CheckBox + Tumbler 开始/结束时间） | `qml/TaskEditor.qml` |
+| TaskEditor 提醒编辑 | 增加提醒设置区块（CheckBox + 提前分钟 SpinBox） | `qml/TaskEditor.qml` |
+| C++ 后端 API 扩展 | 新增 `updateTaskSchedule()` 和 `updateTaskReminder()` | `src/taskmanager.h/.cpp` |
+
+### 2.2 视觉/UX 打磨
+
+| 优化项 | 说明 | 主要涉及文件 |
+|---|---|---|
+| TaskItem 优先级标签 | 标题右侧增加"低/中/高"文字标签（带背景色） | `qml/TaskItem.qml` |
+| TaskItem 提醒标识 | 时间标签行增加红色"提醒"徽章 | `qml/TaskItem.qml` |
+| TaskItem 自适应高度 | 折叠 96px / 展开 120px | `qml/TaskItem.qml` |
+| TaskItem 完成态背景 | 完成任务显示绿色背景色调 | `qml/TaskItem.qml` |
+| Timeline 任务块增强 | 高度增至 24px，显示"HH:mm 标题"格式，带分隔线和边框 | `qml/Timeline.qml` |
+| Timeline 空状态提示 | 无安排任务时显示"暂无安排的任务" | `qml/Timeline.qml` |
+| 工具栏任务计数 | 显示"已完成/总数"（如"3/5 已完成"） | `qml/Main.qml` |
+| 工具栏星期标签 | 增加星期胶囊标签 | `qml/Main.qml` |
+
+### 2.3 工程规范清理
+
+| 优化项 | 说明 | 主要涉及文件 |
+|---|---|---|
+| CMakeLists QML_FILES 同步 | 补充 PriorityButton/ColorCircle/ColorCircleSmall/AppConstants.js | `CMakeLists.txt` |
+| TaskCreator 死代码清理 | 移除未使用的 reminderHourSpinBox/reminderMinuteSpinBox | `qml/TaskCreator.qml` |
+| 构建目录清理 | 删除冗余 build/ 和 build_mingw/ 目录 | - |
+| 硬编码颜色迁移 | Timeline.qml 的 #1a2233/#f3f4f6 迁移到 AppConstants.js | `qml/Timeline.qml`、`qml/AppConstants.js` |
+| rgba 颜色格式修复 | 改用 Qt.rgba() 和 #AARRGGBB 格式 | `qml/Main.qml`、`qml/Timeline.qml`、`qml/AppConstants.js` |
+| 截图脚本改进 | 丰富示例数据（5任务3分类）、修复展开截图坐标 | `capture_ui.py` |
+
+## 3. v1.1.0 历史优化内容
+
+### 3.1 视觉与 UI 优化
 
 | 优化项 | 说明 | 主要涉及文件 |
 |---|---|---|

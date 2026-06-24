@@ -91,16 +91,16 @@ Rectangle {
                     width: timelineListView.width
                     height: hourHeight
                     color: hourDelegate.isCurrentHour ? C.colorPrimaryBg : (Material.theme === Material.Dark ?
-                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceDark : "#1a2233") :
-                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceLight : "#f3f4f6"))
+                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceDark : C.colorStripeDark) :
+                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceLight : C.colorStripeLight))
 
                     required property int index
                     required property string timeString
                     property int hour: index
                     property bool isCurrentHour: timelineRoot.currentDateStr === timelineRoot.todayStr && timelineRoot.currentHour === hour
                     property color baseColor: hourDelegate.isCurrentHour ? C.colorPrimaryBg : (Material.theme === Material.Dark ?
-                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceDark : "#1a2233") :
-                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceLight : "#f3f4f6"))
+                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceDark : C.colorStripeDark) :
+                        (hourDelegate.index % 2 === 0 ? C.colorSurfaceLight : C.colorStripeLight))
 
                     RowLayout {
                         anchors.fill: parent
@@ -184,9 +184,9 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: C.paddingLarge
                         anchors.verticalCenter: parent.verticalCenter
-                        height: 24
+                        height: C.taskBlockHeight
                         radius: C.radiusSmall
-                        color: Qt.rgba(33, 150, 243, 0.2)
+                        color: Qt.rgba(0x25/255, 0x63/255, 0xEB/255, 0.2)
                         border.color: C.colorPrimary
                         border.width: 2
 
@@ -221,20 +221,44 @@ Rectangle {
                             anchors.right: parent.right
                             anchors.rightMargin: C.paddingLarge
                             anchors.top: parent.top
-                            anchors.topMargin: 4 + index * 24
-                            height: 20
+                            anchors.topMargin: 4 + index * (C.taskBlockHeight + C.taskBlockSpacing)
+                            height: C.taskBlockHeight
                             radius: C.radiusSmall
                             color: modelData.color || C.colorPrimary
-                            opacity: 0.8
+                            opacity: 0.9
+                            border.color: Qt.darker(modelData.color || C.colorPrimary, 1.3)
+                            border.width: 1
 
-                            Label {
+                            RowLayout {
                                 anchors.fill: parent
                                 anchors.leftMargin: C.spacingMedium
-                                text: modelData.title
-                                color: "white"
-                                font.pixelSize: C.fontSizeSmall
-                                verticalAlignment: Text.AlignVCenter
-                                elide: Text.ElideRight
+                                anchors.rightMargin: C.spacingMedium
+                                spacing: C.spacingSmall
+
+                                Label {
+                                    text: Qt.formatTime(modelData.startTime, "HH:mm")
+                                    color: C.colorTextOnAccent
+                                    font.pixelSize: C.fontSizeSmall
+                                    font.bold: true
+                                    Layout.preferredWidth: 38
+                                }
+
+                                Rectangle {
+                                    Layout.preferredWidth: 1
+                                    Layout.fillHeight: true
+                                    Layout.topMargin: 4
+                                    Layout.bottomMargin: 4
+                                    color: Qt.rgba(1, 1, 1, 0.4)
+                                }
+
+                                Label {
+                                    text: modelData.title
+                                    color: C.colorTextOnAccent
+                                    font.pixelSize: C.fontSizeSmall
+                                    verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
                             }
                         }
                     }
@@ -267,12 +291,53 @@ Rectangle {
                         Label {
                             anchors.centerIn: parent
                             text: Qt.formatTime(new Date(), "HH:mm")
-                            color: "white"
+                            color: C.colorTextOnAccent
                             font.pixelSize: C.fontSizeSmall
                         }
                     }
                 }
             }
+        }
+    }
+
+    // 空状态提示（覆盖在 ScrollView 上，当无安排任务时显示）
+    ColumnLayout {
+        anchors.centerIn: parent
+        anchors.verticalCenterOffset: -40
+        spacing: C.spacingMedium
+        visible: taskManager.scheduledTasks.length === 0
+        z: 10
+
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 64
+            Layout.preferredHeight: 64
+            radius: 32
+            color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
+            border.color: Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight
+            border.width: 1
+
+            Label {
+                anchors.centerIn: parent
+                text: "○"
+                font.pixelSize: 32
+                color: C.colorTextMuted
+            }
+        }
+
+        Label {
+            Layout.alignment: Qt.AlignHCenter
+            text: "暂无安排的任务"
+            color: C.colorTextSecondary
+            font.pixelSize: C.fontSizeTitle
+            font.bold: true
+        }
+
+        Label {
+            Layout.alignment: Qt.AlignHCenter
+            text: "从左侧拖拽任务到时间轴"
+            color: C.colorTextMuted
+            font.pixelSize: C.fontSizeMedium
         }
     }
 

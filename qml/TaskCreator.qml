@@ -292,45 +292,10 @@ Dialog {
                 spacing: C.spacingMedium
 
                 Label {
-                    text: "提醒时间:"
-                    Layout.preferredWidth: 72
-                    Layout.alignment: Qt.AlignVCenter
-                }
-
-                SpinBox {
-                    id: reminderHourSpinBox
-                    Layout.fillWidth: true
-                    from: 0
-                    to: 23
-                    value: new Date().getHours()
-                    editable: true
-                }
-
-                Label {
-                    text: ":"
-                    Layout.alignment: Qt.AlignVCenter
-                }
-
-                SpinBox {
-                    id: reminderMinuteSpinBox
-                    Layout.fillWidth: true
-                    from: 0
-                    to: 59
-                    value: 0
-                    editable: true
-                }
-            }
-
-            RowLayout {
-                visible: reminderCheckBox.checked
-                Layout.fillWidth: true
-                spacing: C.spacingMedium
-
-                Label {
                     text: "提前"
                     Layout.preferredWidth: 72
                     Layout.alignment: Qt.AlignVCenter
-                    color: Material.theme === Material.Dark ? "#aaa" : "#666"
+                    color: Material.theme === Material.Dark ? C.colorLabelMutedDark : C.colorLabelMutedLight
                 }
 
                 SpinBox {
@@ -346,7 +311,7 @@ Dialog {
                 Label {
                     text: "分钟"
                     Layout.alignment: Qt.AlignVCenter
-                    color: Material.theme === Material.Dark ? "#aaa" : "#666"
+                    color: Material.theme === Material.Dark ? C.colorLabelMutedDark : C.colorLabelMutedLight
                 }
             }
         }
@@ -441,8 +406,6 @@ Dialog {
         startMinuteTumbler.currentIndex = 0
         endHourTumbler.currentIndex = (new Date().getHours() + 1) % 24
         endMinuteTumbler.currentIndex = 0
-        reminderHourSpinBox.value = new Date().getHours()
-        reminderMinuteSpinBox.value = 0
         reminderAdvanceSpinBox.value = 15
     }
 

@@ -6,9 +6,11 @@ import "AppConstants.js" as C
 
 Rectangle {
     id: taskItemRoot
-    height: 96
+    height: taskItemRoot.isExpanded ? 120 : 96
     radius: C.radiusLarge
-    color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
+    color: task.completed
+        ? (Material.theme === Material.Dark ? C.colorCompletedBgDark : C.colorSuccessBg)
+        : (Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight)
     border.color: task.completed
         ? C.colorSuccess
         : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
@@ -25,6 +27,24 @@ Rectangle {
         case 1: return C.colorWarning
         case 2: return C.colorDanger
         default: return C.colorSuccess
+        }
+    }
+
+    function priorityText(priority) {
+        switch (priority) {
+        case 0: return "低"
+        case 1: return "中"
+        case 2: return "高"
+        default: return "低"
+        }
+    }
+
+    function priorityBg(priority) {
+        switch (priority) {
+        case 0: return C.priorityLabelBgLow
+        case 1: return C.priorityLabelBgMedium
+        case 2: return C.priorityLabelBgHigh
+        default: return C.priorityLabelBgLow
         }
     }
 
@@ -66,25 +86,50 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter
             spacing: C.spacingSmall
 
-            Label {
-                id: titleLabel
-                text: taskItemRoot.task.title
-                font.pixelSize: C.fontSizeTitle
-                font.bold: true
-                font.strikeout: taskItemRoot.task.completed
-                color: taskItemRoot.task.completed ? C.colorTextMuted : (Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark)
-                elide: Text.ElideRight
+            // 标题行：标题 + 优先级标签
+            RowLayout {
                 Layout.fillWidth: true
+                spacing: C.spacingMedium
+
+                Label {
+                    text: taskItemRoot.task.title
+                    font.pixelSize: C.fontSizeTitle
+                    font.bold: true
+                    font.strikeout: taskItemRoot.task.completed
+                    color: taskItemRoot.task.completed ? C.colorTextMuted : (Material.theme === Material.Dark ? C.colorTextLight : C.colorTextDark)
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                }
+
+                // 优先级文字标签
+                Rectangle {
+                    Layout.preferredHeight: C.badgeHeight
+                    Layout.preferredWidth: priorityLabel.implicitWidth + C.badgePaddingH * 2
+                    radius: C.badgeRadius
+                    color: priorityBg(taskItemRoot.task.priority)
+                    border.color: priorityColor(taskItemRoot.task.priority)
+                    border.width: 1
+                    visible: !taskItemRoot.task.completed
+
+                    Label {
+                        id: priorityLabel
+                        anchors.centerIn: parent
+                        text: priorityText(taskItemRoot.task.priority)
+                        font.pixelSize: C.badgeFontSize
+                        font.bold: true
+                        color: priorityColor(taskItemRoot.task.priority)
+                    }
+                }
             }
 
             Label {
                 id: descriptionLabel
-                text: taskItemRoot.task.description || "暂无描述"
+                text: taskItemRoot.task.description
                 font.pixelSize: C.fontSizeMedium
                 color: Material.theme === Material.Dark ? C.colorTextDisabled : C.colorTextSecondary
                 elide: Text.ElideRight
                 Layout.fillWidth: true
-                visible: taskItemRoot.isExpanded
+                visible: taskItemRoot.isExpanded && taskItemRoot.task.description.length > 0
                 opacity: visible ? 1.0 : 0.0
 
                 Behavior on opacity {
@@ -92,19 +137,42 @@ Rectangle {
                 }
             }
 
+            // 时间标签行
             RowLayout {
-                spacing: C.spacingMedium
+                spacing: C.spacingSmall
                 visible: taskItemRoot.task.scheduled
 
                 Label {
-                    text: "\uD83D\uDD50"
-                    font.pixelSize: C.fontSizeSmall
+                    text: "时间"
+                    font.pixelSize: C.fontSizeMin
+                    color: C.colorTextMuted
                 }
 
                 Label {
                     text: Qt.formatTime(taskItemRoot.task.startTime, "HH:mm") + " - " + Qt.formatTime(taskItemRoot.task.endTime, "HH:mm")
                     font.pixelSize: C.fontSizeSmall
                     color: C.colorPrimary
+                    font.bold: true
+                }
+
+                // 提醒标识
+                Rectangle {
+                    visible: taskItemRoot.task.hasReminder
+                    Layout.preferredHeight: C.badgeHeight - 4
+                    Layout.preferredWidth: reminderIcon.implicitWidth + C.badgePaddingH
+                    radius: (C.badgeHeight - 4) / 2
+                    color: C.colorDangerBg
+                    border.color: C.colorDanger
+                    border.width: 1
+
+                    Label {
+                        id: reminderIcon
+                        anchors.centerIn: parent
+                        text: "提醒"
+                        font.pixelSize: C.fontSizeMin
+                        font.bold: true
+                        color: C.colorDanger
+                    }
                 }
             }
         }

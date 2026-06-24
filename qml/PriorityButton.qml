@@ -26,7 +26,7 @@ Rectangle {
     Label {
         anchors.centerIn: parent
         text: root.btnText
-        color: (root.selector && root.selector.currentIndex === root.btnIndex) ? "white" : root.btnColor
+        color: (root.selector && root.selector.currentIndex === root.btnIndex) ? C.colorTextOnAccent : root.btnColor
         font.bold: true
         font.pixelSize: C.fontSizeMedium
     }

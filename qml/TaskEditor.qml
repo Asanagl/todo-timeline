@@ -17,6 +17,11 @@ Dialog {
     property int taskPriority: 0
     property string taskColor: C.colorPrimary
     property string taskCategory: ""
+    property bool taskScheduled: false
+    property date taskStartTime: new Date()
+    property date taskEndTime: new Date()
+    property bool taskHasReminder: false
+    property date taskReminderTime: new Date()
 
     enter: Transition {
         NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: C.animDurationDialog }
@@ -77,11 +82,68 @@ Dialog {
         taskPriority = task.priority
         taskColor = task.color
         taskCategory = task.category || ""
+        taskScheduled = task.scheduled
+        taskHasReminder = task.hasReminder
+
+        if (task.scheduled && task.startTime) {
+            taskStartTime = task.startTime
+            taskEndTime = task.endTime
+        } else {
+            var now = new Date()
+            taskStartTime = now
+            var endDefault = new Date(now.getTime() + 3600000)
+            taskEndTime = endDefault
+        }
+
+        if (task.hasReminder && task.reminderTime) {
+            taskReminderTime = task.reminderTime
+        } else {
+            taskReminderTime = taskStartTime
+        }
+
         titleField.text = task.title
         descriptionField.text = task.description
         prioritySelector.currentIndex = task.priority
         var colorIdx = C.taskColors.indexOf(task.color)
         colorSelector.currentIndex = colorIdx >= 0 ? colorIdx : 0
+
+        // 分类下拉
+        categoryComboBox.refreshCategoryModel()
+        var catIdx = 0
+        for (var i = 0; i < categoryComboBox.model.length; i++) {
+            if (categoryComboBox.model[i].id === (task.category || "")) {
+                catIdx = i
+                break
+            }
+        }
+        categoryComboBox.currentIndex = catIdx
+
+        // 时间安排
+        scheduleCheckBox.checked = task.scheduled
+        if (task.scheduled && task.startTime) {
+            startHourTumbler.currentIndex = task.startTime.getHours()
+            startMinuteTumbler.currentIndex = task.startTime.getMinutes()
+            endHourTumbler.currentIndex = task.endTime.getHours()
+            endMinuteTumbler.currentIndex = task.endTime.getMinutes()
+        } else {
+            var n = new Date()
+            startHourTumbler.currentIndex = n.getHours()
+            startMinuteTumbler.currentIndex = 0
+            endHourTumbler.currentIndex = (n.getHours() + 1) % 24
+            endMinuteTumbler.currentIndex = 0
+        }
+
+        // 提醒设置
+        reminderCheckBox.checked = task.hasReminder
+        if (task.hasReminder && task.scheduled && task.startTime) {
+            // 根据 reminderTime 和 startTime 反推提前分钟数
+            var diffMs = task.startTime.getTime() - task.reminderTime.getTime()
+            var advanceMin = Math.max(0, Math.floor(diffMs / 60000))
+            reminderAdvanceSpinBox.value = Math.min(120, advanceMin)
+        } else {
+            reminderAdvanceSpinBox.value = 15
+        }
+
         open()
     }
 
@@ -89,6 +151,7 @@ Dialog {
         spacing: C.spacingXXLarge
         anchors.margins: C.paddingLarge
 
+        // 标题输入
         ColumnLayout {
             Layout.fillWidth: true
             spacing: C.spacingMedium
@@ -99,12 +162,14 @@ Dialog {
                 id: titleField
                 placeholderText: "输入任务标题..."
                 text: taskEditorDialog.taskTitle
+                maximumLength: 200
                 onAccepted: {
                     if (saveButton.enabled) saveButton.clicked()
                 }
             }
         }
 
+        // 描述输入
         ColumnLayout {
             Layout.fillWidth: true
             spacing: C.spacingMedium
@@ -127,6 +192,41 @@ Dialog {
             }
         }
 
+        // 分类选择
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: C.spacingMedium
+
+            FormLabel { text: "分类" }
+
+            ComboBox {
+                id: categoryComboBox
+                Layout.fillWidth: true
+                Layout.preferredHeight: C.heightLarge
+                textRole: "name"
+                valueRole: "id"
+
+                function refreshCategoryModel() {
+                    var items = [{ name: "无分类", id: "" }]
+                    if (taskManager.categories) {
+                        for (var i = 0; i < taskManager.categories.length; i++) {
+                            var cat = taskManager.categories[i]
+                            items.push({ name: cat.name, id: cat.id })
+                        }
+                    }
+                    categoryComboBox.model = items
+                }
+
+                background: Rectangle {
+                    radius: C.radiusMedium
+                    color: Material.theme === Material.Dark ? C.colorSurfaceDark : C.colorSurfaceLight
+                    border.color: parent.activeFocus ? C.colorPrimary : (Material.theme === Material.Dark ? C.colorBorderDark : C.colorBorderLight)
+                    border.width: parent.activeFocus ? 2 : 1
+                }
+            }
+        }
+
+        // 优先级选择
         ColumnLayout {
             Layout.fillWidth: true
             spacing: C.spacingMedium
@@ -150,6 +250,151 @@ Dialog {
             }
         }
 
+        // 时间安排
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: C.spacingMedium
+
+            FormLabel { text: "时间安排" }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: C.spacingLarge
+
+                CheckBox {
+                    id: scheduleCheckBox
+                    text: "安排时间"
+                }
+
+                Item { Layout.fillWidth: true }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                visible: scheduleCheckBox.checked
+                spacing: C.spacingLarge
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: C.spacingLarge
+
+                    Label {
+                        text: "开始时间:"
+                        Layout.preferredWidth: 80
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Tumbler {
+                        id: startHourTumbler
+                        Layout.preferredWidth: 60
+                        Layout.preferredHeight: 60
+                        model: 24
+                        currentIndex: taskEditorDialog.taskStartTime.getHours()
+                        visibleItemCount: 3
+                    }
+
+                    Label {
+                        text: ":"
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Tumbler {
+                        id: startMinuteTumbler
+                        Layout.preferredWidth: 60
+                        Layout.preferredHeight: 60
+                        model: 60
+                        currentIndex: taskEditorDialog.taskStartTime.getMinutes()
+                        visibleItemCount: 3
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: C.spacingLarge
+
+                    Label {
+                        text: "结束时间:"
+                        Layout.preferredWidth: 80
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Tumbler {
+                        id: endHourTumbler
+                        Layout.preferredWidth: 60
+                        Layout.preferredHeight: 60
+                        model: 24
+                        currentIndex: taskEditorDialog.taskEndTime.getHours()
+                        visibleItemCount: 3
+                    }
+
+                    Label {
+                        text: ":"
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Tumbler {
+                        id: endMinuteTumbler
+                        Layout.preferredWidth: 60
+                        Layout.preferredHeight: 60
+                        model: 60
+                        currentIndex: taskEditorDialog.taskEndTime.getMinutes()
+                        visibleItemCount: 3
+                    }
+                }
+            }
+        }
+
+        // 提醒设置
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: C.spacingMedium
+
+            FormLabel { text: "提醒设置" }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: C.spacingLarge
+
+                CheckBox {
+                    id: reminderCheckBox
+                    text: "设置提醒"
+                    enabled: scheduleCheckBox.checked
+                }
+
+                Item { Layout.fillWidth: true }
+            }
+
+            RowLayout {
+                visible: reminderCheckBox.checked && scheduleCheckBox.checked
+                Layout.fillWidth: true
+                spacing: C.spacingMedium
+
+                Label {
+                    text: "提前"
+                    Layout.preferredWidth: 72
+                    Layout.alignment: Qt.AlignVCenter
+                    color: Material.theme === Material.Dark ? C.colorLabelMutedDark : C.colorLabelMutedLight
+                }
+
+                SpinBox {
+                    id: reminderAdvanceSpinBox
+                    Layout.fillWidth: true
+                    from: 0
+                    to: 120
+                    value: 15
+                    stepSize: 5
+                    editable: true
+                }
+
+                Label {
+                    text: "分钟"
+                    Layout.alignment: Qt.AlignVCenter
+                    color: Material.theme === Material.Dark ? C.colorLabelMutedDark : C.colorLabelMutedLight
+                }
+            }
+        }
+
+        // 颜色选择
         ColumnLayout {
             Layout.fillWidth: true
             spacing: C.spacingMedium
@@ -172,6 +417,7 @@ Dialog {
             }
         }
 
+        // 按钮区域
         RowLayout {
             Layout.fillWidth: true
             spacing: C.spacingLarge
@@ -195,14 +441,39 @@ Dialog {
                 highlighted: true
 
                 onClicked: {
+                    var selectedCategory = categoryComboBox.model[categoryComboBox.currentIndex].id
+
+                    // 更新基本信息
                     taskManager.updateTaskFull(
                         taskEditorDialog.taskId,
                         titleField.text,
                         descriptionField.text,
                         prioritySelector.currentIndex,
                         C.taskColors[colorSelector.currentIndex],
-                        taskEditorDialog.taskCategory
+                        selectedCategory
                     )
+
+                    // 更新时间安排
+                    if (scheduleCheckBox.checked) {
+                        var startTime = new Date()
+                        startTime.setHours(startHourTumbler.currentIndex, startMinuteTumbler.currentIndex, 0, 0)
+                        var endTime = new Date()
+                        endTime.setHours(endHourTumbler.currentIndex, endMinuteTumbler.currentIndex, 0, 0)
+                        taskManager.updateTaskSchedule(taskEditorDialog.taskId, startTime, endTime, true)
+
+                        // 更新提醒
+                        if (reminderCheckBox.checked) {
+                            var reminderTime = new Date(startTime)
+                            reminderTime.setMinutes(reminderTime.getMinutes() - reminderAdvanceSpinBox.value)
+                            taskManager.updateTaskReminder(taskEditorDialog.taskId, true, reminderTime)
+                        } else {
+                            taskManager.updateTaskReminder(taskEditorDialog.taskId, false, null)
+                        }
+                    } else {
+                        taskManager.updateTaskSchedule(taskEditorDialog.taskId, null, null, false)
+                        taskManager.updateTaskReminder(taskEditorDialog.taskId, false, null)
+                    }
+
                     taskEditorDialog.close()
                     notification.show("任务已更新: " + titleField.text)
                 }

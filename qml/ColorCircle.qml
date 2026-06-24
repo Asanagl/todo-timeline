@@ -16,7 +16,7 @@ Rectangle {
     radius: 17
     color: root.circleColor
     border.color: (root.selector && root.selector.currentIndex === root.circleIndex)
-        ? (Material.theme === Material.Dark ? "white" : C.colorTextDark)
+        ? (Material.theme === Material.Dark ? C.colorTextOnAccent : C.colorTextDark)
         : "transparent"
     border.width: (root.selector && root.selector.currentIndex === root.circleIndex) ? 3 : 0
 
@@ -25,7 +25,7 @@ Rectangle {
         width: 14
         height: 14
         radius: 7
-        color: "white"
+        color: C.colorTextOnAccent
         visible: root.selector && root.selector.currentIndex === root.circleIndex
     }
 
